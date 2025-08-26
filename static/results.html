@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Results & Predictions - Linear Regression</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="sidebar-header">
+<div style="display: flex; justify-content: center; align-items: center;  padding-bottom: 6px; margin-bottom: 10px;">
+  <h2 style="margin: 0; font-size: 1.6rem;">
+    Univariate Linear Regression
+  </h2>
+</div>
+            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+        </div>
+        <div class="nav-item active">
+             Data Upload
+        </div>
+        <div class="nav-item active">
+             Training Setup
+        </div>
+        <div class="nav-item active">
+             Results & Predict
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-content">
+                <div class="header-text">
+                    <h1>Model Results & Predictions</h1>
+                    <p>Analyze your trained model and make predictions on new data</p>
+                </div>
+                <button class="theme-toggle" id="themeBtn">🌙</button>
+            </div>
+        </div>
+
+        <!-- Training Success Banner -->
+        <div class="success-banner" id="successBanner">
+            <div class="banner-content">
+                <div class="banner-text">
+                    <h3>Training Completed Successfully!</h3>
+                    <p>Your linear regression model has been trained and is ready for predictions</p>
+                </div>
+                <span class="banner-close" onclick="closeBanner()">×</span>
+            </div>
+        </div>
+
+        <!-- Results Layout -->
+        <div class="results-layout">
+            <!-- Left Column -->
+            <div class="results-left">
+                <!-- Make Predictions -->
+                <div class="card predictions-card">
+<div style="display: flex; justify-content: center; align-items: center;  padding-bottom: 6px; margin-bottom: 10px;">
+  <h3 style="margin: 0; font-size: 1.3rem;">
+    Make Predictions
+  </h3>
+</div>                    
+                    <div class="equation-container">
+                        <div class="equation-display-large" id="predictionEquation">
+                            y = 2.5000x + 1.2000
+                        </div>
+                    </div>
+                    
+                    <div class="prediction-section">
+                        <h4>Single Prediction</h4>
+                        <div class="single-prediction">
+                            <div class="prediction-input">
+                                <label for="xValue">Enter X Value</label>
+                                <input type="number" id="xValue" placeholder="Enter X value" step="any">
+                            </div>
+                            <div class="prediction-buttons">
+                                <button class="predict-btn" id="predictSingle">Predict</button>
+                                <button class="clear-btn" id="clearSingle">Clear</button>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-result" id="predictionResult" style="display: none;">
+                            <div class="result-display">
+                                <span class="result-label">Predicted Y:</span>
+                                <span class="result-value" id="predictedValue">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="batch-section">
+                        <h4>Batch Predictions</h4>
+                        <p class="batch-description">Upload a CSV file with X values to get predictions for multiple data points</p>
+                        
+                        <div class="batch-upload" id="batchUploadZone">
+                            <div class="upload-content">
+                                <span class="upload-icon">📁</span>
+                                <p>Drop CSV file here or click to browse</p>
+                                <span class="upload-hint">File should have X values in first column</span>
+                            </div>
+                            <input type="file" id="batchFileInput" accept=".csv" hidden>
+                        </div>
+                        
+                        <div class="batch-results" id="batchResults" style="display: none;">
+                            <div class="batch-summary">
+                                <span id="batchCount">0 predictions made</span>
+                                <button class="download-batch-btn" id="downloadBatchResults">Download Results</button>
+                            </div>
+                            <div class="batch-preview">
+                                <table id="batchTable">
+                                    <thead>
+                                        <tr>
+                                            <th>X Value</th>
+                                            <th>Predicted Y</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="batchTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Model Comparison -->
+                <div class="card comparison-card">
+<div style="display: flex; justify-content: center; align-items: center;  padding-bottom: 6px; margin-bottom: 10px;">
+  <h3 style="margin: 0; font-size: 1.3rem;">
+    Model Comparison with Scikit-Learn
+  </h3>
+</div>                    
+                    <div class="comparison-table">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Our Model</th>
+                                    <th>Sklearn Model</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>R² Score</td>
+                                    <td id="ourModelR2">0.8945</td>
+                                    <td id="sklearnR2">0.9002</td>
+                                </tr>
+                                <tr>
+                                    <td>RMSE</td>
+                                    <td id="ourModelRmse">0.000234</td>
+                                    <td id="sklearnRmse">0.000198</td>
+                                </tr>
+                                <tr>
+                                    <td>MAE</td>
+                                    <td id="ourModelMae">0.000123</td>
+                                    <td id="sklearnMae">0.000098</td>
+                                </tr>
+                                <tr>
+                                    <td>Equation</td>
+                                    <td id="ourModelEquation">y = 2.5000x + 1.2000</td>
+                                    <td id="sklearnEquation">y = 2.4987x + 1.1989</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="results-right">
+                <!-- Training Parameters -->
+                <div class="card training-params-card">
+<div style="display: flex; justify-content: center; align-items: center;  padding-bottom: 6px; margin-bottom: 10px;">
+  <h3 style="margin: 0; font-size: 1.3rem;">
+     Model Paramets Summary 
+  </h3>
+</div>
+                    
+                    <div class="params-grid">
+                        <div class="param-row">
+                            <span class="param-name">Learning Rate:</span>
+                            <span class="param-value" id="learningRateValue">0.01</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Epochs:</span>
+                            <span class="param-value" id="epochsValue">100</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Tolerance:</span>
+                            <span class="param-value" id="toleranceValue">0.0001</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Early Stopping:</span>
+                            <span class="param-value" id="earlyStoppingValue">Yes</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Training Speed:</span>
+                            <span class="param-value" id="trainingSpeedValue">1.0</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Train Split:</span>
+                            <span class="param-value" id="trainSplit">80%</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">X Column:</span>
+                            <span class="param-value" id="xColumnValue">X</span>
+                        </div>
+                        <div class="param-row">
+                            <span class="param-name">Y Column:</span>
+                            <span class="param-value" id="yColumnValue">Y</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Download Reports -->
+                <div class="card downloads-card">
+<div style="display: flex; justify-content: center; align-items: center;  padding-bottom: 6px; margin-bottom: 10px;">
+  <h3 style="margin: 0; font-size: 1.3rem;">
+    Download Report
+  </h3>
+</div>                    
+                    <div class="download-grid">
+                        <div class="download-item">
+                            <div class="download-info">
+                                <h4>PDF Report</h4>
+                                <p>Training Parameters Report an results</p>
+                            </div>
+                            <button class="download-btn" id="downloadPDF">Download PDF</button>
+                        </div>
+                        
+                        <div class="download-item">
+                            <div class="download-info">
+                                <h4>CSV Results</h4>
+                                <p>Get your Predictions on batch data</p>
+                            </div>
+                            <button class="download-btn" id="downloadCSV">Download CSV</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script  type="module" src="/static/js/results.js"></script>
+</body>
+</html>
