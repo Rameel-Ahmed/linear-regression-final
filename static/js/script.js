@@ -6,6 +6,7 @@ import {
     createRangePlot,
     createStatisticalSummary
 } from './visualization-functions.js';
+import { loadState, saveState, resetState, advanceStep } from './state.js';
 
 
 // Global variables
@@ -47,6 +48,33 @@ document.addEventListener('DOMContentLoaded', function() {
     document.documentElement.setAttribute('data-theme', savedTheme);
     if (themeBtn) {
         themeBtn.textContent = savedTheme === 'light' ? '🌙' : '☀️';
+    }
+
+    // resume if user comes back from later steps
+    const st = loadState();
+    if (st.step >= 2 && st.trainingData) {
+        console.log('🔄 Resuming upload page from saved state');
+        window.cleanedData = {
+            x_values: st.trainingData.statistics.x_data,
+            y_values: st.trainingData.statistics.y_data
+        };
+        window.cleanedDataColumns = {
+            x_column: st.trainingData.columns.x_column,
+            y_column: st.trainingData.columns.y_column
+        };
+        window.cleanedStats = {
+            x_mean: st.trainingData.statistics.x_mean,
+            y_mean: st.trainingData.statistics.y_mean,
+            x_std: st.trainingData.statistics.x_std,
+            y_std: st.trainingData.statistics.y_std
+        };
+        showVisualizationSection();
+        setTimeout(() => {
+            createScatterPlot();
+            createDensityPlot();
+            createRangePlot();
+            createStatisticalSummary();
+        }, 50);
     }
 
     setupEventListeners();
@@ -210,6 +238,8 @@ function parseCSV(csvText) {
 }
 
 function resetWorkflow() {
+    // when new CSV chosen, reset global workflow state
+    advanceStep(1);
     // Hide all sections except preview
     if (elements.columnSection) elements.columnSection.style.display = 'none';
     if (elements.dataQualitySection) elements.dataQualitySection.style.display = 'none';
@@ -607,8 +637,10 @@ async function cleanDataAPI(xCol, yCol, removeDuplicates, removeOutliers, handle
             const cleanedRowCount = result.file_info?.cleaned_shape?.[0] || 0;
             showSuccessToast('Data cleaned successfully!', cleanedRowCount);
 
-            // Save for training page
+            // Store for training page
             localStorage.setItem('trainingData', JSON.stringify(result));
+            // Advance workflow state to step 2 (data processed)
+            advanceStep(2, { trainingData: result });
             
         } else {
             const error = await response.json();
@@ -688,7 +720,7 @@ function showVisualizations() {
 
 
 function proceedToTraining() {
-    // Navigate to training page
+    advanceStep(2); // ensure state updated
     window.location.href = '/static/training.html';
 }
 

@@ -1,4 +1,5 @@
 import { setupSidebarToggle } from './helping_functions.js';
+import { loadState } from './state.js';
 
 // Global variables
 let trainingResults = null;
@@ -10,6 +11,18 @@ let batchPredictions = [];
 document.addEventListener('DOMContentLoaded', function() {
     setupSidebarToggle();
     initializeTheme();
+    
+    // Ensure modelData is available for predictions from workflowState
+    const st = loadState();
+    if (st.resultsData) {
+        modelData = {
+            theta0: st.resultsData.final_theta0 || 0,
+            theta1: st.resultsData.final_theta1 || 0,
+            equation: st.resultsData.equation || 'y = 0x + 0'
+        };
+        console.log('🔄 modelData set from workflowState:', modelData);
+    }
+    
     loadTrainingResults();
     setupEventListeners();
     displayModelSummary();
@@ -613,6 +626,12 @@ function displayModelSummary() {
     }
 }
 
+function displayModelSummaryFrom(data){
+  // reuse logic from displayModelSummary but using provided data; quick call:
+  localStorage.setItem('allTrainingData', JSON.stringify(data));
+  displayModelSummary();
+}
+
 function makeSinglePrediction() {
     console.log('🔮 Making single prediction...');
     console.log('🔮 modelData:', modelData);
@@ -844,4 +863,7 @@ function downloadCSVFile(content, filename) {
 function closeBanner() {
     document.getElementById('successBanner').style.display = 'none';
 }
+
+// Make the function available globally for inline onclick handler
+window.closeBanner = closeBanner;
 

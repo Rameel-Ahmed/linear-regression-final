@@ -1,5 +1,10 @@
 
 import { setupSidebarToggle } from './helping_functions.js';
+import { loadState, advanceStep } from './state.js';
+const stPage = loadState();
+if (!localStorage.getItem('trainingData') && stPage.trainingData) {
+    localStorage.setItem('trainingData', JSON.stringify(stPage.trainingData));
+}
 
 // Global variables for collapsible summary
 let summaryExpanded = true;
@@ -36,6 +41,10 @@ let trainingId = null;
 
 // Initialize
 async function loadTrainingData() {
+    if (window.__restoredFromCache) {
+        console.log('🔄 Skipping normal load - using cached data');
+        return;
+    }
     try {
         console.log('🔄 Loading training data...');
         
@@ -77,6 +86,19 @@ async function loadTrainingData() {
         } catch (e) {
             console.error('❌ Error creating visualizations:', e);
         }
+
+        // >>> Restore final charts if we already have results in state
+        const workflow = loadState();
+        if (workflow.step === 3 && workflow.resultsData) {
+            setTimeout(() => {
+                console.log('🔄 Restoring final charts/equation from cached results');
+                updateTrainingDisplay(workflow.resultsData);
+                updateCostChart(workflow.resultsData);
+                updatePerformanceMetrics(workflow.resultsData);
+                updateProgressBar(workflow.resultsData);
+                updateStatus('Training complete (cached)');
+            }, 300);
+        }
         
         try {
             updateTrainingStatus('Data loaded and ready for training', '✅');
@@ -116,6 +138,69 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('🔄 Performance metrics will be initialized when charts are shown');
             }
         }, 1000); // Small delay to ensure DOM is fully ready
+
+    // === Restore cached final view === (moved here)
+    const st = loadState();
+    if (st.step === 3 && st.resultsData) {
+        console.log('🔄 Restoring cached training results');
+
+        // Prepare data for scatter/cost charts
+        const xArr = st.trainingData?.statistics?.x_data || [];
+        const yArr = st.trainingData?.statistics?.y_data || [];
+        const xCol = st.trainingData?.columns?.x_column || 'X';
+        const yCol = st.trainingData?.columns?.y_column || 'Y';
+        const csvLike = xArr.map((xv,i)=>({ [xCol]: xv, [yCol]: yArr[i] }));
+
+        // Draw visualizations once
+        createScatterPlot(csvLike, xCol, yCol);
+        createCostChart();
+
+        // If cost history saved, repopulate chart
+        // Clear existing data first
+        if (window.costChart) {
+            window.costChart.data.labels = [];
+            window.costChart.data.datasets[0].data = [];
+            window.costChart.update();
+        }
+
+        if (st.resultsData.cost_history?.length) {
+            window.costChart.data.labels = st.resultsData.cost_history.map(p=>p[0]);
+            window.costChart.data.datasets[0].data = st.resultsData.cost_history.map(p=>p[1]);
+            window.costChart.update();
+        }
+
+        // Fix epoch count - use training params as fallback
+        const tp = st.trainingParams || {};
+        const epochCount = st.resultsData.total_epochs || 
+                           st.resultsData.epoch || 
+                           tp.epochs || 
+                           st.resultsData.cost_history?.length || 1;
+
+        const viewData = {
+            theta0: st.resultsData.final_theta0 || 0,
+            theta1: st.resultsData.final_theta1 || 0,
+            rmse: st.resultsData.final_rmse || 0,
+            mae: st.resultsData.final_mae || 0,
+            r2: st.resultsData.final_r2 || 0,
+            cost: costVal || 0,
+            epoch: epochCount,
+            max_epochs: epochCount,
+            is_complete: true
+        };
+
+        updateTrainingDisplay(viewData);
+        updateCostChart(viewData);
+        updatePerformanceMetrics(viewData);
+        updateProgressBar(viewData);
+
+        // Force progress bar text and fill to 100%
+        const progFill = document.getElementById('progressFill');
+        const progText = document.getElementById('progressText');
+        if (progFill) progFill.style.width = '100%';
+        if (progText) progText.textContent = `Epoch ${epochCount}/${epochCount}`;
+
+        updateStatus('Training complete (cached)');
+    }
 });
 
 function initializeTheme() {
@@ -1325,6 +1410,17 @@ function completeTraining(epochData) {
         theta1Display.textContent = epochData.final_theta1.toFixed(6);
     }
     
+    // Persist in workflow state
+    // capture cost history
+    let costHistory = [];
+    if (window.costChart) {
+        const labels = window.costChart.data.labels;
+        const values = window.costChart.data.datasets[0].data;
+        costHistory = labels.map((l,idx)=>[l, values[idx]]);
+    }
+    const resultsToStore = { ...epochData, cost_history: costHistory };
+    advanceStep(3, { resultsData: resultsToStore });
+    
     // NOTE: We don't store training results here anymore because the streaming response
     // already stores the complete data in allTrainingData. This function only updates the UI.
     console.log('💾 No need to store training results - streaming response already did that');
@@ -1422,6 +1518,12 @@ async function prepareAndGoToResults() {
         console.error('❌ Error preparing results:', error);
         alert('Error preparing results. Please try again.');
     }
+}
+
+// guard access
+const st = loadState();
+if (!st.step || st.step < 2) {
+    window.location.href = '/static/index.html';
 }
 
 

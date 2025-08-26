@@ -127,3 +127,26 @@ export function showInfoToast(title, message) {
         }
     }, 6000);
 }
+
+// =========================================================================
+// WORKFLOW SIDEBAR ACCESS
+// =========================================================================
+import { loadState } from './state.js';
+
+export function applySidebarAccess() {
+    const state = loadState();
+    const items = document.querySelectorAll('.sidebar .nav-item[data-step]');
+    items.forEach(el => {
+        const needed = Number(el.dataset.step);
+        if (state.step >= needed) {
+            el.classList.remove('disabled');
+            // leave as link
+        } else {
+            el.classList.add('disabled');
+            el.addEventListener('click', e => {
+                e.preventDefault();
+                alert('Complete previous steps first.');
+            });
+        }
+    });
+}
