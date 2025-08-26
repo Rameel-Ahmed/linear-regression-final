@@ -88,17 +88,7 @@ async function loadTrainingData() {
         }
 
         // >>> Restore final charts if we already have results in state
-        const workflow = loadState();
-        if (workflow.step === 3 && workflow.resultsData) {
-            setTimeout(() => {
-                console.log('🔄 Restoring final charts/equation from cached results');
-                updateTrainingDisplay(workflow.resultsData);
-                updateCostChart(workflow.resultsData);
-                updatePerformanceMetrics(workflow.resultsData);
-                updateProgressBar(workflow.resultsData);
-                updateStatus('Training complete (cached)');
-            }, 300);
-        }
+        // REMOVED: This was causing duplicate restore logic
         
         try {
             updateTrainingStatus('Data loaded and ready for training', '✅');
@@ -176,20 +166,22 @@ document.addEventListener('DOMContentLoaded', function() {
                            tp.epochs || 
                            st.resultsData.cost_history?.length || 1;
 
+        const costVal = st.resultsData.final_cost || st.resultsData.test_mse || 0;
+
         const viewData = {
             theta0: st.resultsData.final_theta0 || 0,
             theta1: st.resultsData.final_theta1 || 0,
             rmse: st.resultsData.final_rmse || 0,
             mae: st.resultsData.final_mae || 0,
             r2: st.resultsData.final_r2 || 0,
-            cost: costVal || 0,
+            cost: costVal,
             epoch: epochCount,
             max_epochs: epochCount,
             is_complete: true
         };
 
         updateTrainingDisplay(viewData);
-        updateCostChart(viewData);
+        // updateCostChart(viewData);  // REMOVED: already populated chart manually above
         updatePerformanceMetrics(viewData);
         updateProgressBar(viewData);
 

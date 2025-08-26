@@ -1,4 +1,4 @@
-import { setupSidebarToggle } from './helping_functions.js';
+import { setupSidebarToggle, showSuccessToast } from './helping_functions.js';
 import { loadState } from './state.js';
 
 // Global variables
@@ -12,15 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
     setupSidebarToggle();
     initializeTheme();
     
-    // Ensure modelData is available for predictions from workflowState
-    const st = loadState();
-    if (st.resultsData) {
-        modelData = {
-            theta0: st.resultsData.final_theta0 || 0,
-            theta1: st.resultsData.final_theta1 || 0,
-            equation: st.resultsData.equation || 'y = 0x + 0'
-        };
-        console.log('🔄 modelData set from workflowState:', modelData);
+    // Ensure modelData is available for predictions from session data
+    const comprehensiveResults = localStorage.getItem('comprehensiveResults');
+    if (comprehensiveResults) {
+        try {
+            const compData = JSON.parse(comprehensiveResults);
+            const trainingData = JSON.parse(compData.allTrainingData || '{}');
+            
+            modelData = {
+                theta0: trainingData.final_theta0 || 0,
+                theta1: trainingData.final_theta1 || 0,
+                equation: trainingData.equation || 'y = 0x + 0'
+            };
+            console.log('🔄 modelData set from session data:', modelData);
+            
+            // Show success toast instead of banner
+            showSuccessToast('Training Completed Successfully!', 'Your linear regression model is ready for predictions');
+        } catch (e) {
+            console.error('Error parsing session data:', e);
+        }
     }
     
     loadTrainingResults();
