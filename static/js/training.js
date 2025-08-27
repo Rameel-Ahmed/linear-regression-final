@@ -199,6 +199,15 @@ document.addEventListener('DOMContentLoaded', function() {
                            tp.epochs || 
                            st.resultsData.cost_history?.length || 1;
 
+        // Restore early stopping toggle state
+        if (tp.early_stopping !== undefined) {
+            const earlyStopToggle = document.getElementById('earlyStop');
+            if (earlyStopToggle) {
+                earlyStopToggle.checked = tp.early_stopping;
+                console.log('✅ Early stopping toggle restored:', tp.early_stopping);
+            }
+        }
+
         const costVal = st.resultsData.final_cost || st.resultsData.test_mse || 0;
 
         const viewData = {
@@ -375,6 +384,24 @@ function setupEventListeners() {
         };
     });
 
+    // Set Accurate mode as active by default
+    const accurateBtn = document.querySelector('.mode-btn[data-mode="accurate"]');
+    if (accurateBtn) {
+        accurateBtn.classList.add('active');
+        console.log('✅ Accurate mode set as default');
+        
+        // Also set the default values to match Accurate preset
+        setTrainingMode('accurate');
+    }
+
+    // Initialize early stopping toggle
+    const earlyStopToggle = document.getElementById('earlyStop');
+    if (earlyStopToggle) {
+        // Set default state (unchecked)
+        earlyStopToggle.checked = false;
+        console.log('✅ Early stopping toggle initialized');
+    }
+
     // Control buttons
     document.getElementById('startBtn').onclick = startTraining;
     document.getElementById('pauseBtn').onclick = pauseTraining;
@@ -431,21 +458,115 @@ function syncSliders() {
         trainSplit.oninput = () => trainSplitInput.value = trainSplit.value;
         trainSplitInput.oninput = () => trainSplit.value = trainSplitInput.value;
     }
+
+    // Monitor parameter changes and auto-switch to Custom mode
+    monitorParameterChanges();
 }
 
 function setTrainingMode(mode) {
     const presets = {
-        accurate: { lr: 0.3, epochs: 150, tolerance: 0.00001, earlyStop: true, trainSplit: 0.99,tolerance: 0.0002 },
+        accurate: { lr: 0.3, epochs: 150, tolerance: 0.00001, earlyStop: true, trainSplit: 0.99, trainingSpeed: 0.4 },
         custom: null
     };
 
     if (presets[mode]) {
+        // Set flag to prevent auto-switch during preset application
+        isSettingPreset = true;
+        
         document.getElementById('learningRate').value = presets[mode].lr;
         document.getElementById('learningRateInput').value = presets[mode].lr;
         document.getElementById('epochs').value = presets[mode].epochs;
         document.getElementById('epochsInput').value = presets[mode].epochs;
         document.getElementById('tolerance').value = presets[mode].tolerance;
         document.getElementById('toleranceInput').value = presets[mode].tolerance;
+        document.getElementById('trainSplit').value = presets[mode].trainSplit;
+        document.getElementById('trainSplitInput').value = presets[mode].trainSplit;
+        document.getElementById('earlyStop').checked = presets[mode].earlyStop;
+        document.getElementById('trainingSpeed').value = presets[mode].trainingSpeed;
+        document.getElementById('trainingSpeedInput').value = presets[mode].trainingSpeed;
+        
+        // Reset flag after a short delay to allow parameter monitoring to resume
+        setTimeout(() => {
+            isSettingPreset = false;
+            console.log('🔄 Parameter monitoring resumed after preset application');
+        }, 200);
+    }
+}
+
+// Global flag to prevent auto-switch during preset application
+let isSettingPreset = false;
+
+// Function to monitor parameter changes and auto-switch to Custom mode
+function monitorParameterChanges() {
+    const parameters = [
+        'learningRate', 'learningRateInput',
+        'epochs', 'epochsInput', 
+        'tolerance', 'toleranceInput',
+        'trainSplit', 'trainSplitInput',
+        'trainingSpeed', 'trainingSpeedInput',
+        'earlyStop'
+    ];
+
+    parameters.forEach(paramId => {
+        const element = document.getElementById(paramId);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.addEventListener('change', checkAndSwitchToCustom);
+            } else {
+                element.addEventListener('input', checkAndSwitchToCustom);
+            }
+        }
+    });
+}
+
+// Function to check if parameters match Accurate preset and switch to Custom if needed
+function checkAndSwitchToCustom() {
+    // Don't auto-switch if we're currently setting preset values
+    if (isSettingPreset) {
+        console.log('⏸️ Skipping auto-switch check (preset being applied)');
+        return;
+    }
+
+    const accuratePreset = { lr: 0.3, epochs: 150, tolerance: 0.00001, earlyStop: true, trainSplit: 0.99, trainingSpeed: 0.4 };
+    
+    const currentValues = {
+        lr: parseFloat(document.getElementById('learningRate').value),
+        epochs: parseInt(document.getElementById('epochs').value),
+        tolerance: parseFloat(document.getElementById('tolerance').value),
+        earlyStop: document.getElementById('earlyStop').checked,
+        trainSplit: parseFloat(document.getElementById('trainSplit').value),
+        trainingSpeed: parseFloat(document.getElementById('trainingSpeed').value)
+    };
+
+    // Check if current values match Accurate preset
+    const isAccurate = (
+        Math.abs(currentValues.lr - accuratePreset.lr) < 0.001 &&
+        currentValues.epochs === accuratePreset.epochs &&
+        Math.abs(currentValues.tolerance - accuratePreset.tolerance) < 0.000001 &&
+        currentValues.earlyStop === accuratePreset.earlyStop &&
+        Math.abs(currentValues.trainSplit - accuratePreset.trainSplit) < 0.001 &&
+        Math.abs(currentValues.trainingSpeed - accuratePreset.trainingSpeed) < 0.001
+    );
+
+    // Get current active mode
+    const activeMode = document.querySelector('.mode-btn.active');
+    
+    if (!isAccurate && activeMode && activeMode.dataset.mode === 'accurate') {
+        // Switch to Custom mode
+        const customBtn = document.querySelector('.mode-btn[data-mode="custom"]');
+        if (customBtn) {
+            activeMode.classList.remove('active');
+            customBtn.classList.add('active');
+            console.log('🔄 Auto-switched to Custom mode due to parameter change');
+        }
+    } else if (isAccurate && activeMode && activeMode.dataset.mode === 'custom') {
+        // Switch back to Accurate mode
+        const accurateBtn = document.querySelector('.mode-btn[data-mode="accurate"]');
+        if (accurateBtn) {
+            activeMode.classList.remove('active');
+            accurateBtn.classList.add('active');
+            console.log('✅ Auto-switched back to Accurate mode');
+        }
     }
 }
 
