@@ -49,8 +49,172 @@ function toggleSummary() {
     }
 }
 
+// Simple function to toggle parameters panel
+function toggleSimpleParams() {
+    const paramsPanel = document.getElementById('simpleParamsPanel');
+    const paramsBtn = document.getElementById('paramsToggleBtn');
+    
+    if (paramsPanel.classList.contains('open')) {
+        // Close panel
+        paramsPanel.classList.remove('open');
+        paramsBtn.textContent = '⚙️ Params';
+        console.log('🔄 Parameters panel closed');
+    } else {
+        // Open panel
+        paramsPanel.classList.add('open');
+        paramsBtn.textContent = '✕ Close';
+        
+        // Sync values from main form
+        syncSimpleValues();
+        
+        console.log('✅ Parameters panel opened');
+    }
+}
+
+// Sync values from main form to simple panel
+function syncSimpleValues() {
+    const mainLR = document.getElementById('learningRate').value;
+    const mainEpochs = document.getElementById('epochs').value;
+    const mainEarlyStop = document.getElementById('earlyStop').checked;
+    
+    document.getElementById('simpleLR').value = mainLR;
+    document.getElementById('simpleLRInput').value = mainLR;
+    document.getElementById('simpleEpochs').value = mainEpochs;
+    document.getElementById('simpleEpochsInput').value = mainEpochs;
+    document.getElementById('simpleEarlyStop').checked = mainEarlyStop;
+    
+    // Update mode buttons
+    const activeMode = document.querySelector('.mode-btn.active');
+    if (activeMode) {
+        document.querySelectorAll('.simple-mode-btn').forEach(btn => btn.classList.remove('active'));
+        const simpleBtn = document.querySelector(`.simple-mode-btn[onclick*="${activeMode.dataset.mode}"]`);
+        if (simpleBtn) simpleBtn.classList.add('active');
+    }
+}
+
+// Set training mode in simple panel
+function setSimpleMode(mode) {
+    // Update simple panel buttons
+    document.querySelectorAll('.simple-mode-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`.simple-mode-btn[onclick*="${mode}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Update main form mode
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    const mainBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+    if (mainBtn) mainBtn.classList.add('active');
+    
+    // Set the training mode
+    setTrainingMode(mode);
+    
+    console.log('✅ Simple panel training mode set to:', mode);
+}
+
+// Function to sync sidebar values with main form
+function syncSidebarValues() {
+    // Sync from main form to sidebar
+    const mainLearningRate = document.getElementById('learningRate').value;
+    const mainEpochs = document.getElementById('epochs').value;
+    const mainTolerance = document.getElementById('tolerance').value;
+    const mainTrainSplit = document.getElementById('trainSplit').value;
+    const mainTrainingSpeed = document.getElementById('trainingSpeed').value;
+    const mainEarlyStop = document.getElementById('earlyStop').checked;
+    
+    // Update sidebar inputs
+    document.getElementById('sidebarLearningRate').value = mainLearningRate;
+    document.getElementById('sidebarLearningRateInput').value = mainLearningRate;
+    document.getElementById('sidebarEpochs').value = mainEpochs;
+    document.getElementById('sidebarEpochsInput').value = mainEpochs;
+    document.getElementById('sidebarTolerance').value = mainTolerance;
+    document.getElementById('sidebarToleranceInput').value = mainTolerance;
+    document.getElementById('sidebarTrainSplit').value = mainTrainSplit;
+    document.getElementById('sidebarTrainSplitInput').value = mainTrainSplit;
+    document.getElementById('sidebarTrainingSpeed').value = mainTrainingSpeed;
+    document.getElementById('sidebarTrainingSpeedInput').value = mainTrainingSpeed;
+    document.getElementById('sidebarEarlyStop').checked = mainEarlyStop;
+    
+    // Update sidebar mode buttons
+    const activeMode = document.querySelector('.mode-btn.active');
+    if (activeMode) {
+        document.querySelectorAll('#paramsPanelSidebar .mode-btn').forEach(btn => btn.classList.remove('active'));
+        const sidebarBtn = document.querySelector(`#paramsPanelSidebar .mode-btn[data-mode="${activeMode.dataset.mode}"]`);
+        if (sidebarBtn) sidebarBtn.classList.add('active');
+    }
+    
+    console.log('🔄 Sidebar values synced with main form');
+}
+
+// Function to set training mode in sidebar
+function setSidebarTrainingMode(mode) {
+    // Update sidebar mode buttons
+    document.querySelectorAll('#paramsPanelSidebar .mode-btn').forEach(btn => btn.classList.remove('active'));
+    const activeBtn = document.querySelector(`#paramsPanelSidebar .mode-btn[data-mode="${mode}"]`);
+    if (activeBtn) activeBtn.classList.add('active');
+    
+    // Also update main form mode
+    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+    const mainBtn = document.querySelector(`.mode-btn[data-mode="${mode}"]`);
+    if (mainBtn) mainBtn.classList.add('active');
+    
+    // Set the training mode
+    setTrainingMode(mode);
+    
+    console.log('✅ Sidebar training mode set to:', mode);
+}
+
+// Function to setup sidebar input synchronization
+function setupSidebarSync() {
+    const sidebarInputs = [
+        'sidebarLearningRate', 'sidebarLearningRateInput',
+        'sidebarEpochs', 'sidebarEpochsInput',
+        'sidebarTolerance', 'sidebarToleranceInput',
+        'sidebarTrainSplit', 'sidebarTrainSplitInput',
+        'sidebarTrainingSpeed', 'sidebarTrainingSpeedInput',
+        'sidebarEarlyStop'
+    ];
+    
+    sidebarInputs.forEach(inputId => {
+        const element = document.getElementById(inputId);
+        if (element) {
+            if (element.type === 'checkbox') {
+                element.addEventListener('change', function() {
+                    // Sync to main form
+                    const mainId = inputId.replace('sidebar', '').toLowerCase();
+                    const mainElement = document.getElementById(mainId);
+                    if (mainElement) {
+                        mainElement.checked = this.checked;
+                        // Trigger parameter change check
+                        checkAndSwitchToCustom();
+                    }
+                });
+            } else {
+                element.addEventListener('input', function() {
+                    // Sync to main form
+                    const mainId = inputId.replace('sidebar', '').toLowerCase();
+                    const mainElement = document.getElementById(mainId);
+                    if (mainElement) {
+                        mainElement.value = this.value;
+                        // Trigger parameter change check
+                        checkAndSwitchToCustom();
+                    }
+                });
+            }
+        }
+    });
+    
+    console.log('✅ Sidebar input synchronization setup complete');
+}
+
 // Make toggleSummary available globally
 window.toggleSummary = toggleSummary;
+
+// Make simple functions available globally
+window.toggleSimpleParams = toggleSimpleParams;
+window.setSimpleMode = setSimpleMode;
+
+
+
+
 
 // Global variables
 let trainingData = null;
@@ -401,6 +565,8 @@ function setupEventListeners() {
         earlyStopToggle.checked = false;
         console.log('✅ Early stopping toggle initialized');
     }
+    
+
 
     // Control buttons
     document.getElementById('startBtn').onclick = startTraining;
@@ -437,26 +603,59 @@ function syncSliders() {
     const lr = document.getElementById('learningRate');
     const lrInput = document.getElementById('learningRateInput');
     lr.oninput = () => lrInput.value = lr.value;
-    lrInput.oninput = () => lr.value = lrInput.value;
+    lrInput.oninput = () => {
+        const value = parseFloat(lrInput.value);
+        if (value < 0.001) lrInput.value = 0.001;
+        if (value > 1) lrInput.value = 1;
+        lr.value = lrInput.value;
+    };
 
     // Epochs
     const epochs = document.getElementById('epochs');
     const epochsInput = document.getElementById('epochsInput');
     epochs.oninput = () => epochsInput.value = epochs.value;
-    epochsInput.oninput = () => epochs.value = epochsInput.value;
+    epochsInput.oninput = () => {
+        const value = parseInt(epochsInput.value);
+        if (value < 5) epochsInput.value = 5;
+        if (value > 200) epochsInput.value = 200;
+        epochs.value = epochsInput.value;
+    };
 
     // Tolerance
     const tolerance = document.getElementById('tolerance');
     const toleranceInput = document.getElementById('toleranceInput');
     tolerance.oninput = () => toleranceInput.value = tolerance.value;
-    toleranceInput.oninput = () => tolerance.value = toleranceInput.value;
+    toleranceInput.oninput = () => {
+        const value = parseFloat(toleranceInput.value);
+        if (value < 0) toleranceInput.value = 0;
+        if (value > 0.01) toleranceInput.value = 0.01;
+        tolerance.value = toleranceInput.value;
+    };
 
     // Train Split
     const trainSplit = document.getElementById('trainSplit');
     const trainSplitInput = document.getElementById('trainSplitInput');
     if (trainSplit && trainSplitInput) {
         trainSplit.oninput = () => trainSplitInput.value = trainSplit.value;
-        trainSplitInput.oninput = () => trainSplit.value = trainSplitInput.value;
+        trainSplitInput.oninput = () => {
+            const value = parseFloat(trainSplitInput.value);
+            if (value < 0.3) trainSplitInput.value = 0.3;
+            if (value > 0.99) trainSplitInput.value = 0.99;
+            trainSplit.value = trainSplitInput.value;
+        };
+    }
+
+    // Training Speed
+    const trainingSpeed = document.getElementById('trainingSpeed');
+    const trainingSpeedInput = document.getElementById('trainingSpeedInput');
+    if (trainingSpeed && trainingSpeedInput) {
+        trainingSpeed.oninput = () => trainingSpeedInput.value = trainingSpeed.value;
+        trainingSpeedInput.oninput = () => {
+            const value = parseFloat(trainingSpeedInput.value);
+            if (value < 0.2) trainingSpeedInput.value = 0.2;
+            if (value > 1.0) trainingSpeedInput.value = 1.0;
+            trainingSpeed.value = trainingSpeedInput.value;
+        };
     }
 
     // Monitor parameter changes and auto-switch to Custom mode
@@ -856,9 +1055,25 @@ function startTraining() {
     const trainingSpeed = parseFloat(document.getElementById('trainingSpeed').value);
     const trainSplit = parseFloat(document.getElementById('trainSplit').value);
     
-    // Validate parameters
-    if (learningRate <= 0 || epochs <= 0 || tolerance < 0 || trainSplit <= 0 || trainSplit >= 1) {
-        alert('Please enter valid training parameters');
+    // Validate parameters with proper range checking
+    if (learningRate < 0.001 || learningRate > 1) {
+        alert('Learning Rate must be between 0.001 and 1');
+        return;
+    }
+    if (epochs < 5 || epochs > 200) {
+        alert('Max Epochs must be between 5 and 200');
+        return;
+    }
+    if (tolerance < 0 || tolerance > 0.01) {
+        alert('Convergence Tolerance must be between 0 and 0.01');
+        return;
+    }
+    if (trainSplit < 0.3 || trainSplit > 0.99) {
+        alert('Train/Test Split must be between 0.3 and 0.99');
+        return;
+    }
+    if (trainingSpeed < 0.2 || trainingSpeed > 1.0) {
+        alert('Training Speed must be between 0.2 and 1.0');
         return;
     }
     
@@ -1750,6 +1965,20 @@ function expandCharts() {
         // Update global state
         isExpanded = true;
         
+        // Show simple parameters button
+        const paramsToggleBtn = document.getElementById('paramsToggleBtn');
+        console.log('🔍 Looking for params button:', paramsToggleBtn);
+        console.log('🔍 Button element found:', !!paramsToggleBtn);
+        console.log('🔍 Button current display:', paramsToggleBtn?.style.display);
+        
+        if (paramsToggleBtn) {
+            paramsToggleBtn.style.display = 'block';
+            console.log('✅ Simple parameters button shown');
+            console.log('🔍 Button display after setting:', paramsToggleBtn.style.display);
+        } else {
+            console.error('❌ Simple parameters button not found!');
+        }
+        
         // Force chart resize after expansion
         setTimeout(() => {
             if (window.costChart) window.costChart.resize();
@@ -1779,6 +2008,20 @@ function closeExpandedView() {
         
         // Update global state
         isExpanded = false;
+        
+        // Hide simple parameters button and panel
+        const paramsToggleBtn = document.getElementById('paramsToggleBtn');
+        if (paramsToggleBtn) {
+            paramsToggleBtn.style.display = 'none';
+            console.log('🔄 Simple parameters button hidden');
+        }
+        
+        // Hide parameters panel if it's open
+        const paramsPanel = document.getElementById('simpleParamsPanel');
+        if (paramsPanel && paramsPanel.classList.contains('open')) {
+            paramsPanel.classList.remove('open');
+            console.log('🔄 Simple parameters panel closed');
+        }
         
         // Force chart resize after closing
         setTimeout(() => {

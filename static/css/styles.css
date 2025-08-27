@@ -995,6 +995,25 @@ body {
   display: none;
 }
 
+
+
+
+
+
+
+/* Responsive design for simple button */
+@media (max-width: 768px) {
+  .simple-params-toggle {
+    top: 1rem;
+    right: 1rem;
+  }
+  
+  .params-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
 .training-layout.charts-expanded {
   grid-template-columns: 1fr;
 }
