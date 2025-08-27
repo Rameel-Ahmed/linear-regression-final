@@ -1,262 +1,371 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script>(function(){const t=localStorage.getItem('theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function () {
+        const t = localStorage.getItem("theme") || "light";
+        document.documentElement.setAttribute("data-theme", t);
+      })();
+    </script>
     <title>Model Training - Linear Regression</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css" />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Sidebar -->
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <h2>Univariate Linear Regression</h2>
-            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-        </div>
-        <a href="/static/index.html" class="nav-item" data-step="1">Data Upload</a>
-        <a href="/static/training.html" class="nav-item" data-step="2">Training Setup</a>
-        <a href="/static/results.html" class="nav-item" data-step="3">Results & Predict</a>
+      <div class="sidebar-header">
+        <h2>Univariate Linear Regression</h2>
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+      </div>
+      <a href="/static/index.html" class="nav-item" data-step="1"
+        >Data Upload</a
+      >
+      <a href="/static/training.html" class="nav-item" data-step="2"
+        >Training Setup</a
+      >
+      <a href="/static/results.html" class="nav-item" data-step="3"
+        >Results & Predict</a
+      >
     </nav>
 
     <!-- Main Content -->
     <main class="main-content">
-        <!-- Header -->
-        <div class="page-header">
-            <div class="header-content">
-                <div class="header-text">
-                    <h1>Univariate Model Training Configuration</h1>
-                    <p>Configure parameters and watch your model train in real-time</p>
-                </div>
-                <button class="theme-toggle" id="themeBtn">🌙</button>
+      <!-- Header -->
+      <div class="page-header">
+        <div class="header-content">
+          <div class="header-text">
+            <h1>Univariate Model Training Configuration</h1>
+            <p>Configure parameters and watch your model train in real-time</p>
+          </div>
+          <button class="theme-toggle" id="themeBtn">🌙</button>
+        </div>
+      </div>
+
+      <!-- Training Layout -->
+      <div class="training-layout">
+        <!-- Left: Visualization -->
+        <div class="training-left">
+          <div class="card viz-card">
+            <div class="viz-header">
+              <h3>Live Training Visualization</h3>
+              <div
+                class="equation-display"
+                id="equationDisplay"
+                style="display: none"
+              >
+                y = NaN + NaN·x
+              </div>
+              <div class="viz-controls">
+                <button
+                  class="expand-btn"
+                  id="expandChartsBtn"
+                  title="Expand Charts"
+                  style="display: none"
+                >
+                  ⛶
+                </button>
+                <button
+                  class="close-expand-btn"
+                  id="closeExpandBtn"
+                  title="Close Expanded View"
+                  style="display: none"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
+
+            <!-- Main Training Charts - Bigger Size -->
+            <div class="main-charts-grid" id="mainChartsGrid">
+              <div class="chart-container main-chart" id="costContainer">
+                <canvas id="costChart"></canvas>
+              </div>
+              <div class="chart-container main-chart" id="scatterContainer">
+                <canvas id="scatterChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Error Metrics Section -->
+            <div class="error-metrics-section">
+              <div
+                class="error-metrics-row"
+                style="display: flex; gap: 1rem; justify-content: space-between"
+              >
+                <div class="metric-card" style="flex: 1; text-align: center">
+                  <div class="metric-value" id="rmseMetric">-</div>
+                  <div class="metric-label">RMSE</div>
+                </div>
+                <div class="metric-card" style="flex: 1; text-align: center">
+                  <div class="metric-value" id="maeMetric">-</div>
+                  <div class="metric-label">MAE</div>
+                </div>
+                <div class="metric-card" style="flex: 1; text-align: center">
+                  <div class="metric-value" id="r2Metric">-</div>
+                  <div class="metric-label">R²</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="progress-container">
+              <div class="progress-info">
+                <span id="progressText">Ready to start</span>
+                <span class="status-text" id="statusText">Ready to train</span>
+
+                <span id="costValue">Cost: -</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+              </div>
+            </div>
+
+            <div class="control-buttons">
+              <button class="control-btn start-btn" id="startBtn">
+                <span class="btn-icon">Start Training</span>
+              </button>
+              <button class="control-btn pause-btn" id="pauseBtn" disabled>
+                <span class="btn-icon">Pause</span>
+              </button>
+              <button class="control-btn resume-btn" id="resumeBtn" disabled>
+                <span class="btn-icon">Resume</span>
+              </button>
+              <button class="control-btn stop-btn" id="stopBtn" disabled>
+                <span class="btn-icon">Stop Training</span>
+              </button>
+              <button class="control-btn restart-btn" id="restartBtn">
+                <span class="btn-icon">Restart</span>
+              </button>
+            </div>
+
+            <div class="export-buttons">
+              <button
+                class="export-btn"
+                id="viewResults"
+                onclick="prepareAndGoToResults()"
+              >
+                View Results Summary
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Training Layout -->
-        <div class="training-layout">
-            <!-- Left: Visualization -->
-            <div class="training-left">
-                <div class="card viz-card">
-                    <div class="viz-header">
-                        <h3>Live Training Visualization</h3>
-                        <div class="equation-display" id="equationDisplay" style="display: none;">y = NaN + NaN·x</div>
-                        <div class="viz-controls">
-                            <button class="expand-btn" id="expandChartsBtn" title="Expand Charts" style="display: none;">⛶</button>
-                            <button class="close-expand-btn" id="closeExpandBtn" title="Close Expanded View" style="display: none;">✕</button>
-                        </div>
-                    </div>
-
-                    <!-- Main Training Charts - Bigger Size -->
-                    <div class="main-charts-grid" id="mainChartsGrid">
-                        <div class="chart-container main-chart" id="costContainer">
-                            <canvas id="costChart"></canvas>
-                        </div>
-                        <div class="chart-container main-chart" id="scatterContainer">
-                            <canvas id="scatterChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Error Metrics Section -->
-                    <div class="error-metrics-section">
-                        <div class="error-metrics-row" style="display: flex; gap: 1rem; justify-content: space-between;">
-                            <div class="metric-card" style="flex: 1; text-align: center;">
-                                <div class="metric-value" id="rmseMetric">-</div>
-                                <div class="metric-label">RMSE</div>
-                            </div>
-                            <div class="metric-card" style="flex: 1; text-align: center;">
-                                <div class="metric-value" id="maeMetric">-</div>
-                                <div class="metric-label">MAE</div>
-                            </div>
-                            <div class="metric-card" style="flex: 1; text-align: center;">
-                                <div class="metric-value" id="r2Metric">-</div>
-                                <div class="metric-label">R²</div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                
-                    
-                    <div class="progress-container">
-                        <div class="progress-info">
-                            <span id="progressText">Ready to start</span>
-                        <span class="status-text" id="statusText">Ready to train</span>
-
-                            <span id="costValue">Cost: -</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" id="progressFill"></div>
-                        </div>
-                    </div>
-
-                    <div class="control-buttons">
-                        <button class="control-btn start-btn" id="startBtn">
-                            <span class="btn-icon">Start Training</span>
-                        </button>
-                        <button class="control-btn pause-btn" id="pauseBtn" disabled>
-                            <span class="btn-icon">Pause</span>
-                        </button>
-                        <button class="control-btn resume-btn" id="resumeBtn" disabled>
-                            <span class="btn-icon">Resume</span>
-                        </button>
-                        <button class="control-btn stop-btn" id="stopBtn" disabled>
-                            <span class="btn-icon">Stop Training</span>
-                        </button>
-                        <button class="control-btn restart-btn" id="restartBtn">
-                            <span class="btn-icon">Restart</span>
-                        </button>
-                    </div>
-                    
-                    <div class="export-buttons">
-                        <button class="export-btn" id="viewResults" onclick="prepareAndGoToResults()">
-                            View Results Summary
-                        </button>
-                    </div>
-                </div>
+        <!-- Right: Controls -->
+        <div class="training-right">
+          <!-- Data Summary -->
+          <div class="card summary-card">
+            <div class="summary-header" onclick="toggleSummary()">
+              <h3 style="margin: 0">Data Summary</h3>
+              <span class="toggle-icon" id="summaryToggleIcon">→</span>
             </div>
 
-            <!-- Right: Controls -->
-            <div class="training-right">
-                <!-- Data Summary -->
-                <div class="card summary-card">
-                    <div class="summary-header" onclick="toggleSummary()">
-                        <h3 style="margin: 0;">Data Summary</h3>
-                        <span class="toggle-icon" id="summaryToggleIcon">→</span>
-                    </div>
-                    
-                    <div class="summary-content" id="summaryContent">
-                        <div class="summary-grid">
-                        <!-- Left Column: X Variables and General Info -->
-                        <div class="summary-column">
-                            <div class="summary-item">
-                                <span class="summary-label">X Variable</span>
-                                <span class="summary-value" id="xVariable">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">X Mean</span>
-                                <span class="summary-value" id="xMean">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">X Std Dev</span>
-                                <span class="summary-value" id="xStd">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Original Rows</span>
-                                <span class="summary-value" id="originalRows">-</span>
-                            </div>
-                        </div>
-                        
-                        <!-- Right Column: Y Variables and Cleaning Info -->
-                        <div class="summary-column">
-                            <div class="summary-item">
-                                <span class="summary-label">Y Variable</span>
-                                <span class="summary-value" id="yVariable">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Y Mean</span>
-                                <span class="summary-value" id="yMean">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Y Std Dev</span>
-                                <span class="summary-value" id="yStd">-</span>
-                            </div>
-                            <div class="summary-item">
-                                <span class="summary-label">Cleaned Rows</span>
-                                <span class="summary-value" id="cleanedRows">-</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                        <!-- Bottom Row: Cleaning Summary -->
-                        <div class="cleaning-summary">
-                            <div class="summary-item">
-                                <span class="summary-label">Rows Removed</span>
-                                <span class="summary-value" id="rowsRemoved">-</span>
-                            </div>
-                        </div>
-                    </div>
+            <div class="summary-content" id="summaryContent">
+              <div class="summary-grid">
+                <!-- Left Column: X Variables and General Info -->
+                <div class="summary-column">
+                  <div class="summary-item">
+                    <span class="summary-label">X Variable</span>
+                    <span class="summary-value" id="xVariable">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">X Mean</span>
+                    <span class="summary-value" id="xMean">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">X Std Dev</span>
+                    <span class="summary-value" id="xStd">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Original Rows</span>
+                    <span class="summary-value" id="originalRows">-</span>
+                  </div>
                 </div>
 
-                <!-- Training Parameters -->
-                <div class="card params-card">
-                    
-                    <div style="display: flex; justify-content: center; align-items: center;">
-  
-  <h3 style="margin: 0;"> Training Parameters</h3>
-</div>
-
-                    <div class="param-group">
-                        <label>Learning Rate</label>
-                        <div class="slider-container">
-                            <input type="range" id="learningRate" min="0.001" max="1" step="0.001" value="0.2">
-                            <input type="number" class="param-input" id="learningRateInput" value="0.2" step="0.001" min="0.001" max="1">
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Max Epochs</label>
-                        <div class="slider-container">
-                            <input type="range" id="epochs" min="5" max="200" step="1" value="20">
-                            <input type="number" class="param-input" id="epochsInput" value="20" min="5" max="200">
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Convergence Tolerance</label>
-                        <div class="slider-container">
-                            <input type="range" id="tolerance" min="0" max="0.01" step="0.0001" value="0">
-                            <input type="number" class="param-input" id="toleranceInput" value="0" step="0.0001" min="0" max="0.01">
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Train/Test Split Ratio</label>
-                        <div class="slider-container">
-                            <input type="range" id="trainSplit" min="0.3" max="0.99" step="0.01" value="0.8">
-                            <input type="number" class="param-input" id="trainSplitInput" value="0.8" step="0.01" min="0.3" max="0.99">
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Training Speed</label>
-                        <div class="slider-container">
-                            <input type="range" id="trainingSpeed" min="0.2" max="1.0" step="0.2" value="0.4">
-                            <input type="number" class="param-input" id="trainingSpeedInput" value="0.4" step="0.2" min="0.2" max="1.0">
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Early Stopping</label>
-                        <div class="toggle-container">
-                            <label class="toggle-label">
-                                <input type="checkbox" id="earlyStop">
-                                <span class="toggle-slider"></span>
-                                <span class="toggle-text">Stop if no improvement</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="param-group">
-                        <label>Training Mode</label>
-                        <div class="mode-buttons">
-                            <button class="mode-btn" data-mode="accurate"> Accurate</button>
-                            <button class="mode-btn" data-mode="custom"> Custom</button>
-                        </div>
-                    </div>
+                <!-- Right Column: Y Variables and Cleaning Info -->
+                <div class="summary-column">
+                  <div class="summary-item">
+                    <span class="summary-label">Y Variable</span>
+                    <span class="summary-value" id="yVariable">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Y Mean</span>
+                    <span class="summary-value" id="yMean">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Y Std Dev</span>
+                    <span class="summary-value" id="yStd">-</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Cleaned Rows</span>
+                    <span class="summary-value" id="cleanedRows">-</span>
+                  </div>
                 </div>
+              </div>
 
-
-
+              <!-- Bottom Row: Cleaning Summary -->
+              <div class="cleaning-summary">
+                <div class="summary-item">
+                  <span class="summary-label">Rows Removed</span>
+                  <span class="summary-value" id="rowsRemoved">-</span>
+                </div>
+              </div>
             </div>
+          </div>
+
+          <!-- Training Parameters -->
+          <div class="card params-card">
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                align-items: center;
+              "
+            >
+              <h3 style="margin: 0">Training Parameters</h3>
+            </div>
+
+            <div class="param-group">
+              <label>Learning Rate</label>
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="learningRate"
+                  min="0.001"
+                  max="1"
+                  step="0.001"
+                  value="0.2"
+                />
+                <input
+                  type="number"
+                  class="param-input"
+                  id="learningRateInput"
+                  value="0.2"
+                  step="0.001"
+                  min="0.001"
+                  max="1"
+                />
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Max Epochs</label>
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="epochs"
+                  min="5"
+                  max="200"
+                  step="1"
+                  value="20"
+                />
+                <input
+                  type="number"
+                  class="param-input"
+                  id="epochsInput"
+                  value="20"
+                  min="5"
+                  max="200"
+                />
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Convergence Tolerance</label>
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="tolerance"
+                  min="0"
+                  max="0.01"
+                  step="0.0001"
+                  value="0"
+                />
+                <input
+                  type="number"
+                  class="param-input"
+                  id="toleranceInput"
+                  value="0"
+                  step="0.0001"
+                  min="0"
+                  max="0.01"
+                />
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Train/Test Split Ratio</label>
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="trainSplit"
+                  min="0.3"
+                  max="0.99"
+                  step="0.01"
+                  value="0.8"
+                />
+                <input
+                  type="number"
+                  class="param-input"
+                  id="trainSplitInput"
+                  value="0.8"
+                  step="0.01"
+                  min="0.3"
+                  max="0.99"
+                />
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Training Speed</label>
+              <div class="slider-container">
+                <input
+                  type="range"
+                  id="trainingSpeed"
+                  min="0.2"
+                  max="1.0"
+                  step="0.2"
+                  value="0.4"
+                />
+                <input
+                  type="number"
+                  class="param-input"
+                  id="trainingSpeedInput"
+                  value="0.4"
+                  step="0.2"
+                  min="0.2"
+                  max="1.0"
+                />
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Early Stopping</label>
+              <div class="toggle-container">
+                <label class="toggle-label">
+                  <input type="checkbox" id="earlyStop" />
+                  <span class="toggle-slider"></span>
+                  <span class="toggle-text">Stop if no improvement</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="param-group">
+              <label>Training Mode</label>
+              <div class="mode-buttons">
+                <button class="mode-btn" data-mode="accurate">Accurate</button>
+                <button class="mode-btn" data-mode="custom">Custom</button>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </main>
 
     <script type="module" src="/static/js/training.js?v=2"></script>
     <script type="module">
-import { applySidebarAccess } from '/static/js/helping_functions.js';
-applySidebarAccess();
-</script>
-</body>
+      import { applySidebarAccess } from "/static/js/helping_functions.js";
+      applySidebarAccess();
+    </script>
+  </body>
 </html>

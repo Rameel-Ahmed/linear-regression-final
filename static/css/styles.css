@@ -1296,6 +1296,8 @@ body {
     margin-bottom: 1rem;
     border-radius: 8px;
     border: 1px solid var(--border-color);
+    min-width: 100%;
+    max-width: 100%;
 }
 
 table {
@@ -1309,6 +1311,8 @@ th, td {
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.875rem;
+    word-wrap: break-word;
+    max-width: 300px;
 }
 
 th {
@@ -1318,6 +1322,8 @@ th {
     color: var(--text-primary);
     position: sticky;
     top: 0;
+    word-wrap: break-word;
+    max-width: 300px;
 }
 
 td {
@@ -3118,6 +3124,11 @@ select option {
     text-align: left;
     border-bottom: 1px solid var(--border-color);
     font-size: 0.9rem;
+    max-width: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .comparison-table th {
@@ -3349,3 +3360,46 @@ select option {
         font-size: 1.5rem;
     }
 }
+
+/* CSV Preview Table Styling */
+.csv-preview {
+    margin: 1.5rem 0;
+    padding: 1.5rem;
+    background: var(--card-bg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    overflow-x: auto;
+}
+
+.csv-preview table {
+    max-width: 100%;
+    width: 100%;
+    table-layout: auto;
+}
+
+.csv-preview th,
+.csv-preview td {
+    max-width: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.csv-preview h5 {
+    margin: 0 0 1rem 0;
+    color: var(--text-primary);
+    font-size: 1.1rem;
+}
+
+/* Preview Table Specific Styling - for results.html */
+#previewTable th,
+#previewTable td {
+    max-width: 150px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+

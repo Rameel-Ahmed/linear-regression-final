@@ -1,271 +1,366 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Linear Regression - Data Upload</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/styles.css" />
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <!-- Toast Container for Notifications -->
     <div class="toast-container" id="toastContainer"></div>
-    
+
     <!-- Hidden Toast Templates -->
-    <div id="toast-templates" style="display: none;">
-        <!-- Success Toast -->
-        <div class="toast-success-template toast success">
-            <div class="toast-header">
-                <h4 class="toast-title"></h4>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-            <div class="toast-content"></div>
+    <div id="toast-templates" style="display: none">
+      <!-- Success Toast -->
+      <div class="toast-success-template toast success">
+        <div class="toast-header">
+          <h4 class="toast-title"></h4>
+          <button
+            class="toast-close"
+            onclick="this.parentElement.parentElement.remove()"
+          >
+            ×
+          </button>
         </div>
-        
-        <!-- Error Toast -->
-        <div class="toast-error-template toast error">
-            <div class="toast-header">
-                <h4 class="toast-title"></h4>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-            <div class="toast-content"></div>
+        <div class="toast-content"></div>
+      </div>
+
+      <!-- Error Toast -->
+      <div class="toast-error-template toast error">
+        <div class="toast-header">
+          <h4 class="toast-title"></h4>
+          <button
+            class="toast-close"
+            onclick="this.parentElement.parentElement.remove()"
+          >
+            ×
+          </button>
         </div>
-        
-        <!-- Warning Toast (for quality reports) -->
-        <div class="toast-warning-template toast warning">
-            <div class="toast-header">
-                <h4 class="toast-title"></h4>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-            <div class="toast-content"></div>
+        <div class="toast-content"></div>
+      </div>
+
+      <!-- Warning Toast (for quality reports) -->
+      <div class="toast-warning-template toast warning">
+        <div class="toast-header">
+          <h4 class="toast-title"></h4>
+          <button
+            class="toast-close"
+            onclick="this.parentElement.parentElement.remove()"
+          >
+            ×
+          </button>
         </div>
-        
-        <!-- Error Toast with Actions -->
-        <div class="toast-error-actions-template toast error">
-            <div class="toast-header">
-                <h4 class="toast-title"></h4>
-                <button class="toast-close" onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-            <div class="toast-content"></div>
-            <div class="toast-actions">
-                <button class="btn btn-primary retry-btn">🔄 Retry</button>
-            </div>
+        <div class="toast-content"></div>
+      </div>
+
+      <!-- Error Toast with Actions -->
+      <div class="toast-error-actions-template toast error">
+        <div class="toast-header">
+          <h4 class="toast-title"></h4>
+          <button
+            class="toast-close"
+            onclick="this.parentElement.parentElement.remove()"
+          >
+            ×
+          </button>
         </div>
+        <div class="toast-content"></div>
+        <div class="toast-actions">
+          <button class="btn btn-primary retry-btn">🔄 Retry</button>
+        </div>
+      </div>
     </div>
-    
+
     <!-- Sidebar -->
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <h2>RegressLab</h2>
-            <button class="sidebar-toggle" id="sidebarToggle">☰</button>
-        </div>
-        <div class="nav-item active">
-             Data Upload
-        </div>
-        <div class="nav-item">
-             Training Setup
-        </div>
-        <div class="nav-item">
-             Results & Predict
-        </div>
+      <div class="sidebar-header">
+        <h2>RegressLab</h2>
+        <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+      </div>
+      <div class="nav-item active">Data Upload</div>
+      <div class="nav-item">Training Setup</div>
+      <div class="nav-item">Results & Predict</div>
     </nav>
 
     <!-- Mobile Menu Toggle -->
 
     <!-- Main Content -->
     <main class="main-content">
-        <div class="container">
-            <!-- Page Header -->
-            <div class="page-header">
-                <div class="header-content">
-                    <div class="header-text">
-                        <h1>Univariate Regression Model Training</h1>
-                        <p>Upload your dataset and configure your regression model</p>
-                    </div>
-                    <button class="theme-toggle" id="themeBtn">🌙</button>
-                </div>
+      <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+          <div class="header-content">
+            <div class="header-text">
+              <h1>Univariate Regression Model Training</h1>
+              <p>Upload your dataset and configure your regression model</p>
             </div>
-            <!-- Upload Section -->
-            <div class="card">
-<div style="display: flex; justify-content: center; align-items: center;">
-  <h3>
-    Upload Your CSV Dataset
-  </h3>
-</div>
-
-                <div class="upload-zone" id="uploadZone">
-                    <div class="upload-content">
-                        <span class="upload-icon">📁</span>
-                        <p>Click to upload or drag and drop your CSV file</p>
-                        <span class="upload-hint">Maximum file size: 10MB</span>
-                    </div>
-                    <input type="file" id="fileInput" accept=".csv" hidden>
-                </div>
-            </div>
-
-            <!-- Preview Section -->
-            <div class="card" id="previewSection" style="display: none;">
-<div style="display: flex; justify-content: center; align-items: center;">
-  <h3 style="margin: 0; padding-bottom: 8px; border-bottom: 2px solid #3182ce;">
-    Data Preview
-  </h3>
-</div>              <div class="table-container">
-                    <table id="dataTable">
-                        <thead id="tableHead"></thead>
-                        <tbody id="tableBody"></tbody>
-                    </table>
-                </div>
-                <div class="data-info">
-                    <span id="rowCount">Rows: 0</span>
-                    <span id="colCount">Columns: 0</span>
-                </div>
-            </div>
-
-            <!-- Column Selection -->
-            <div class="card" id="columnSection" style="display: none;">
-<div style="display: flex; justify-content: center; align-items: center;">
-  <h3 style="margin: 0; padding-bottom: 8px;">
-    Select X and Y Columns
-  </h3>
-</div>                <div class="column-selectors">
-                    <div class="selector-group">
-                        <select id="xColumn">
-                            <option value="">Select X column (Independent Variable)</option>
-                        </select>
-                    </div>
-                    <div class="selector-group">
-                        <select id="yColumn">
-                            <option value="">Select Y column (Dependent Variable)</option>
-                        </select>
-                    </div>
-                </div>
-                <button class="btn btn-primary" id="analyzeDataBtn" disabled> Analyze Data Quality</button>
-            </div>
-
-            <!-- Data Quality Analysis Section -->
-            <div class="card" id="dataQualitySection" style="display: none;">
-                <div style="display: flex; justify-content: center; align-items: center;">
-                    <h3 style="margin: 0; padding-bottom: 8px; border-bottom: 2px solid #3182ce;">
-                         Data Quality Analysis
-                    </h3>
-                </div>
-                
-                <div class="quality-report" id="qualityReport">
-                    <div class="loading-spinner">
-                        <div class="spinner"></div>
-                        <p>Analyzing your data quality...</p>
-                    </div>
-                </div>
-                
-                <div class="quality-actions" id="qualityActions" style="display: none;">
-                    <button class="btn btn-success" id="proceedToCleaning">
-                         Configure Data Cleaning
-                    </button>
-                </div>
-            </div>
-
-            <!-- Data Cleaning Section -->
-            <div class="card" id="cleaningSection" style="display: none;">
-                <div style="display: flex; justify-content: center; align-items: center;">
-                    <h3 style="margin: 0; padding-bottom: 8px; border-bottom: 2px solid #e53e3e;">
-                         Data Cleaning Configuration
-                    </h3>
-                </div>
-                
-                <div class="cleaning-options" id="cleaningOptions">
-                    <div class="cleaning-info">
-                        <div id="noIssuesMessage" style="display: none;">
-                            <p style="color: #10b981; text-align: center; margin: 0px 0;">
-                                 Data is already Clean.
-                            </p>
-                        </div>
-                    </div>
-                    
-                    <div class="cleaning-checkboxes">
-                        <div class="cleaning-option" id="missingValuesOption">
-                            <h4>Missing Values:</h4>
-                            <div class="radio-options">
-                                <div class="radio-item">
-                                    <input type="radio" id="removeMissing" name="missingValues" value="remove" checked>
-                                    <label for="removeMissing">Remove rows with missing values</label>
-                                </div>
-                                <div class="radio-item">
-                                    <input type="radio" id="fillMean" name="missingValues" value="mean">
-                                    <label for="fillMean">Fill missing values with column mean</label>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Add this between your missing values option and outliers option -->
-                        <div class="cleaning-option" id="duplicatesOption">
-                            <h4>Duplicate Rows:</h4>
-                            <div class="radio-options">
-                                <div class="radio-item">
-                                    <input type="radio" id="removeDuplicates" name="duplicates" value="remove" checked>
-                                    <label for="removeDuplicates">Remove duplicate rows</label>
-                                </div>
-                                <div class="radio-item">
-                                    <input type="radio" id="keepDuplicates" name="duplicates" value="keep">
-                                    <label for="keepDuplicates">Keep duplicate rows</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="cleaning-option" id="outliersOption">
-                            <h4>Outliers:</h4>
-                            <div class="radio-options">
-                                <div class="radio-item">
-                                    <input type="radio" id="keepOutliers" name="outliers" value="keep" checked>
-                                    <label for="keepOutliers">Keep outliers</label>
-                                </div>
-                                <div class="radio-item">
-                                    <input type="radio" id="removeOutliers" name="outliers" value="remove">
-                                    <label for="removeOutliers">Remove outliers (IQR method)</label>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="final-actions">
-                    <button class="btn btn-primary" id="cleanDataBtn">
-                         Clean Data & Display Visualizations
-                    </button>
-                </div>
-            </div>
-
-            <!-- Visualization Section (hidden until data ready) -->
-<section id="visualizationSection" class="card" style="display:none; margin-top:2rem;">
-  <div class="card-header">
-      <h3> Data Visualisation </h3>
-  </div>
-
-  <div class="visualization-grid">
-      <div class="chart-container large">
-          <div id="scatterChart"></div>
-      </div>
-
-      <div class="chart-container large">
-          <div id="densityChart"></div>
-      </div>
-
-      <div class="chart-container">
-          <div id="rangeChart"></div>
-      </div>
-
-      <div class="chart-container">
-          <div id="statsChart"></div>
-      </div>
-  </div>
-  
-  <!-- Proceed to Training Button -->
-  <div style="text-align: center; margin: 2rem 0;">
-      <button id="proceedToTrainBtn" class="btn btn-success btn-large" onclick="proceedToTraining()">
-           Proceed to Model Training
-      </button>
-  </div>
-</section>
+            <button class="theme-toggle" id="themeBtn">🌙</button>
+          </div>
         </div>
+        <!-- Upload Section -->
+        <div class="card">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h3>Upload Your CSV Dataset</h3>
+          </div>
+
+          <div class="upload-zone" id="uploadZone">
+            <div class="upload-content">
+              <span class="upload-icon">📁</span>
+              <p>Click to upload or drag and drop your CSV file</p>
+              <span class="upload-hint">Maximum file size: 10MB</span>
+            </div>
+            <input type="file" id="fileInput" accept=".csv" hidden />
+          </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="card" id="previewSection" style="display: none">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h3
+              style="
+                margin: 0;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #3182ce;
+              "
+            >
+              Data Preview
+            </h3>
+          </div>
+          <div class="table-container">
+            <table id="dataTable">
+              <thead id="tableHead"></thead>
+              <tbody id="tableBody"></tbody>
+            </table>
+          </div>
+          <div class="data-info">
+            <span id="rowCount">Rows: 0</span>
+            <span id="colCount">Columns: 0</span>
+          </div>
+        </div>
+
+        <!-- Column Selection -->
+        <div class="card" id="columnSection" style="display: none">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h3 style="margin: 0; padding-bottom: 8px">
+              Select X and Y Columns
+            </h3>
+          </div>
+          <div class="column-selectors">
+            <div class="selector-group">
+              <select id="xColumn">
+                <option value="">Select X column (Independent Variable)</option>
+              </select>
+            </div>
+            <div class="selector-group">
+              <select id="yColumn">
+                <option value="">Select Y column (Dependent Variable)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" id="analyzeDataBtn" disabled>
+            Analyze Data Quality
+          </button>
+        </div>
+
+        <!-- Data Quality Analysis Section -->
+        <div class="card" id="dataQualitySection" style="display: none">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h3
+              style="
+                margin: 0;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #3182ce;
+              "
+            >
+              Data Quality Analysis
+            </h3>
+          </div>
+
+          <div class="quality-report" id="qualityReport">
+            <div class="loading-spinner">
+              <div class="spinner"></div>
+              <p>Analyzing your data quality...</p>
+            </div>
+          </div>
+
+          <div
+            class="quality-actions"
+            id="qualityActions"
+            style="display: none"
+          >
+            <button class="btn btn-success" id="proceedToCleaning">
+              Configure Data Cleaning
+            </button>
+          </div>
+        </div>
+
+        <!-- Data Cleaning Section -->
+        <div class="card" id="cleaningSection" style="display: none">
+          <div
+            style="display: flex; justify-content: center; align-items: center"
+          >
+            <h3
+              style="
+                margin: 0;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #e53e3e;
+              "
+            >
+              Data Cleaning Configuration
+            </h3>
+          </div>
+
+          <div class="cleaning-options" id="cleaningOptions">
+            <div class="cleaning-info">
+              <div id="noIssuesMessage" style="display: none">
+                <p style="color: #10b981; text-align: center; margin: 0px 0">
+                  Data is already Clean.
+                </p>
+              </div>
+            </div>
+
+            <div class="cleaning-checkboxes">
+              <div class="cleaning-option" id="missingValuesOption">
+                <h4>Missing Values:</h4>
+                <div class="radio-options">
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="removeMissing"
+                      name="missingValues"
+                      value="remove"
+                      checked
+                    />
+                    <label for="removeMissing"
+                      >Remove rows with missing values</label
+                    >
+                  </div>
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="fillMean"
+                      name="missingValues"
+                      value="mean"
+                    />
+                    <label for="fillMean"
+                      >Fill missing values with column mean</label
+                    >
+                  </div>
+                </div>
+              </div>
+              <!-- Add this between your missing values option and outliers option -->
+              <div class="cleaning-option" id="duplicatesOption">
+                <h4>Duplicate Rows:</h4>
+                <div class="radio-options">
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="removeDuplicates"
+                      name="duplicates"
+                      value="remove"
+                      checked
+                    />
+                    <label for="removeDuplicates">Remove duplicate rows</label>
+                  </div>
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="keepDuplicates"
+                      name="duplicates"
+                      value="keep"
+                    />
+                    <label for="keepDuplicates">Keep duplicate rows</label>
+                  </div>
+                </div>
+              </div>
+              <div class="cleaning-option" id="outliersOption">
+                <h4>Outliers:</h4>
+                <div class="radio-options">
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="keepOutliers"
+                      name="outliers"
+                      value="keep"
+                      checked
+                    />
+                    <label for="keepOutliers">Keep outliers</label>
+                  </div>
+                  <div class="radio-item">
+                    <input
+                      type="radio"
+                      id="removeOutliers"
+                      name="outliers"
+                      value="remove"
+                    />
+                    <label for="removeOutliers"
+                      >Remove outliers (IQR method)</label
+                    >
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="final-actions">
+            <button class="btn btn-primary" id="cleanDataBtn">
+              Clean Data & Display Visualizations
+            </button>
+          </div>
+        </div>
+
+        <!-- Visualization Section (hidden until data ready) -->
+        <section
+          id="visualizationSection"
+          class="card"
+          style="display: none; margin-top: 2rem"
+        >
+          <div class="card-header">
+            <h3>Data Visualisation</h3>
+          </div>
+
+          <div class="visualization-grid">
+            <div class="chart-container large">
+              <div id="scatterChart"></div>
+            </div>
+
+            <div class="chart-container large">
+              <div id="densityChart"></div>
+            </div>
+
+            <div class="chart-container">
+              <div id="rangeChart"></div>
+            </div>
+
+            <div class="chart-container">
+              <div id="statsChart"></div>
+            </div>
+          </div>
+
+          <!-- Proceed to Training Button -->
+          <div style="text-align: center; margin: 2rem 0">
+            <button
+              id="proceedToTrainBtn"
+              class="btn btn-success btn-large"
+              onclick="proceedToTraining()"
+            >
+              Proceed to Model Training
+            </button>
+          </div>
+        </section>
+      </div>
     </main>
 
-    <script type = 'module' src="/static/js/script.js"></script>
-</body>
+    <script type="module" src="/static/js/script.js"></script>
+  </body>
 </html>
