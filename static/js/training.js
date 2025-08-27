@@ -37,6 +37,7 @@ let costChart = null;
 let isTraining = false;
 let isPaused = false;
 let trainingId = null;
+let isExpanded = false;
 
 
 // Initialize
@@ -351,6 +352,20 @@ function setupEventListeners() {
         console.log('✅ View Results button found and ready');
     } else {
         console.error('❌ View Results button not found');
+    }
+    
+    // Expand/Close buttons
+    const expandBtn = document.getElementById('expandChartsBtn');
+    const closeExpandBtn = document.getElementById('closeExpandBtn');
+    
+    if (expandBtn) {
+        expandBtn.onclick = expandCharts;
+        console.log('✅ Expand button connected');
+    }
+    
+    if (closeExpandBtn) {
+        closeExpandBtn.onclick = closeExpandedView;
+        console.log('✅ Close expand button connected');
     }
 }
 
@@ -723,6 +738,12 @@ function startTraining() {
     formData.append('training_speed', trainingSpeed);
     formData.append('train_split', trainSplit);
     
+    // Auto-expand charts when training starts
+    if (!isExpanded) {
+        expandCharts();
+        console.log('📈 Auto-expanded charts for training');
+    }
+    
     // Start streaming training
     startStreamingTraining(formData);
     
@@ -1094,22 +1115,6 @@ function updatePerformanceMetrics(epochData) {
     }
 }
 
-// Function to toggle optional charts visibility
-function toggleOptionalCharts() {
-    const optionalChartsGrid = document.getElementById('optionalChartsGrid');
-    const toggleChartsText = document.getElementById('toggleChartsText');
-    
-    if (optionalChartsGrid.style.display === 'none') {
-        optionalChartsGrid.style.display = 'grid';
-        toggleChartsText.textContent = '👁️ Hide Optional Charts';
-        
-        // Initialize performance metrics when first shown
-        initializePerformanceMetrics();
-    } else {
-        optionalChartsGrid.style.display = 'none';
-        toggleChartsText.textContent = '👁️ Show Optional Charts';
-    }
-}
 
 function updateTrainingDisplay(epochData) {
     try {
@@ -1509,6 +1514,74 @@ async function prepareAndGoToResults() {
     } catch (error) {
         console.error('❌ Error preparing results:', error);
         alert('Error preparing results. Please try again.');
+    }
+}
+
+// Expand/Close functions
+function expandCharts() {
+    console.log('📈 Expanding charts to fullscreen...');
+    
+    const vizCard = document.querySelector('.viz-card');
+    const trainingLayout = document.querySelector('.training-layout');
+    const expandBtn = document.getElementById('expandChartsBtn');
+    const closeExpandBtn = document.getElementById('closeExpandBtn');
+    
+    if (vizCard && trainingLayout) {
+        // Add expanded classes
+        vizCard.classList.add('expanded');
+        trainingLayout.classList.add('charts-expanded');
+        
+        // Update button visibility
+        if (expandBtn) expandBtn.style.display = 'none';
+        if (closeExpandBtn) closeExpandBtn.style.display = 'flex';
+        
+        // Update global state
+        isExpanded = true;
+        
+        // Force chart resize after expansion
+        setTimeout(() => {
+            if (window.costChart) window.costChart.resize();
+            if (window.scatterChart) window.scatterChart.resize();
+        }, 300);
+        
+        console.log('✅ Charts expanded to fullscreen');
+    }
+}
+
+function closeExpandedView() {
+    console.log('🔄 Closing expanded view...');
+    
+    const vizCard = document.querySelector('.viz-card');
+    const trainingLayout = document.querySelector('.training-layout');
+    const expandBtn = document.getElementById('expandChartsBtn');
+    const closeExpandBtn = document.getElementById('closeExpandBtn');
+    
+    if (vizCard && trainingLayout) {
+        // Remove expanded classes
+        vizCard.classList.remove('expanded');
+        trainingLayout.classList.remove('charts-expanded');
+        
+        // Update button visibility
+        if (expandBtn) expandBtn.style.display = 'flex';
+        if (closeExpandBtn) closeExpandBtn.style.display = 'none';
+        
+        // Update global state
+        isExpanded = false;
+        
+        // Force chart resize after closing
+        setTimeout(() => {
+            if (window.costChart) window.costChart.resize();
+            if (window.scatterChart) window.scatterChart.resize();
+        }, 300);
+        
+        console.log('✅ Expanded view closed');
+    }
+}
+
+// Auto-expand when training starts
+function startTrainingWithExpand() {
+    if (!isExpanded) {
+        expandCharts();
     }
 }
 

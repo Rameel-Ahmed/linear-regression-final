@@ -40,7 +40,11 @@
                 <div class="card viz-card">
                     <div class="viz-header">
                         <h3> Live Training Visualization</h3>
-                        <div class="equation-display" id="equationDisplay">y = NaN + NaN·x</div>
+                        <div class="viz-controls">
+                            <button class="expand-btn" id="expandChartsBtn" title="Expand Charts" style="display: none;">⛶</button>
+                            <button class="close-expand-btn" id="closeExpandBtn" title="Close Expanded View" style="display: none;">✕</button>
+                            <div class="equation-display" id="equationDisplay">y = NaN + NaN·x</div>
+                        </div>
                     </div>
 
                     <!-- Main Training Charts - Bigger Size -->
@@ -55,57 +59,33 @@
                         </div>
                     </div>
 
-                    <!-- Optional Charts Section -->
-                    <div class="optional-charts-section">
-                        <div class="optional-charts-header">
-                            <h4>🔍 Additional Data Views</h4>
-                            <button class="toggle-charts-btn" onclick="toggleOptionalCharts()">
-                                <span id="toggleChartsText"> Show Optional Charts</span>
-                            </button>
-                        </div>
-                        
-                        <div class="optional-charts-grid" id="optionalChartsGrid" style="display: none;">
-                            <!-- Training Performance Metrics -->
-                            <div class="chart-container optional-chart" id="performanceContainer">
-                                <h4> Training Performance Metrics</h4>
-                                <div class="metrics-grid">
-                                    <div class="metric-card">
-                                        <h5> RMSE</h5>
-                                        <div class="metric-value" id="rmseMetric">-</div>
-                                        <div class="metric-label">Root Mean Square Error</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <h5> MAE</h5>
-                                        <div class="metric-value" id="maeMetric">-</div>
-                                        <div class="metric-label">Mean Absolute Error</div>
-                                    </div>
-                                    <div class="metric-card">
-                                        <h5> R²</h5>
-                                        <div class="metric-value" id="r2Metric">-</div>
-                                        <div class="metric-label">Coefficient of Determination</div>
-                                    </div>
-                                </div>
-
+                    <!-- Error Metrics Section -->
+                    <div class="error-metrics-section">
+                        <div class="error-metrics-row" style="display: flex; gap: 1rem; justify-content: space-between;">
+                            <div class="metric-card" style="flex: 1; text-align: center;">
+                                <div class="metric-value" id="rmseMetric">-</div>
+                                <div class="metric-label">RMSE</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1; text-align: center;">
+                                <div class="metric-value" id="maeMetric">-</div>
+                                <div class="metric-label">MAE</div>
+                            </div>
+                            <div class="metric-card" style="flex: 1; text-align: center;">
+                                <div class="metric-value" id="r2Metric">-</div>
+                                <div class="metric-label">R²</div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="training-status">
-                        <span class="status-indicator" id="statusIndicator">⚪</span>
-                        <span class="status-text" id="statusText">Ready to train</span>
-                    </div>
-                </div>
 
-                <!-- Training Controls -->
-                <div class="card controls-card">
-<div style="display: flex; justify-content: center; align-items: center;">
-  <h3 style="margin: 0;">
-    Training Controls
-  </h3>
-</div>                      
+
+                
+                    
                     <div class="progress-container">
                         <div class="progress-info">
                             <span id="progressText">Ready to start</span>
+                        <span class="status-text" id="statusText">Ready to train</span>
+
                             <span id="costValue">Cost: -</span>
                         </div>
                         <div class="progress-bar">
@@ -113,31 +93,24 @@
                         </div>
                     </div>
 
-                    <!-- Training Progress Section -->
-
-
                     <div class="control-buttons">
                         <button class="control-btn start-btn" id="startBtn">
                             <span class="btn-icon">Start Training</span>
-                            
                         </button>
                         <button class="control-btn pause-btn" id="pauseBtn" disabled>
                             <span class="btn-icon">Pause</span>
-                            
                         </button>
                         <button class="control-btn resume-btn" id="resumeBtn" disabled>
                             <span class="btn-icon">Resume</span>
-                            
                         </button>
                         <button class="control-btn stop-btn" id="stopBtn" disabled>
-                            <span class="btn-icon">Stop</span>
-                            
+                            <span class="btn-icon">Stop Training</span>
                         </button>
                         <button class="control-btn restart-btn" id="restartBtn">
                             <span class="btn-icon">Restart</span>
-                            
                         </button>
                     </div>
+                    
                     <div class="export-buttons">
                         <button class="export-btn" id="viewResults" onclick="prepareAndGoToResults()">
                             View Results Summary
@@ -215,14 +188,20 @@
   
   <h3 style="margin: 0;"> Training Parameters</h3>
 </div>
-                    
+
+                    <div class="param-group">
+                        <label>Early Stopping</label>
+                        <div class="slider-container">
+                            <input type="range" id="learningRate" min="0.001" max="0.5" step="0.01" value="0.01">
+                            <input type="number" class="param-input" id="learningRateInput" value="0.01" step="0.01">
+                        </div>
+                    </div>
                     <div class="param-group">
                         <label>Learning Rate</label>
                         <div class="slider-container">
                             <input type="range" id="learningRate" min="0.001" max="0.5" step="0.01" value="0.01">
                             <input type="number" class="param-input" id="learningRateInput" value="0.01" step="0.01">
                         </div>
-                        <span class="param-help">How fast the model learns</span>
                     </div>
 
                     <div class="param-group">
@@ -231,7 +210,6 @@
                             <input type="range" id="epochs" min="10" max="1000" step="50" value="50">
                             <input type="number" class="param-input" id="epochsInput" value="50">
                         </div>
-                        <span class="param-help">Maximum training iterations</span>
                     </div>
 
                     <div class="param-group">
@@ -240,7 +218,6 @@
                             <input type="range" id="tolerance" min="0" max="0.01" step="0.0001" value="0">
                             <input type="number" class="param-input" id="toleranceInput" value="0" step="0.0001">
                         </div>
-                        <span class="param-help">Stop when improvement is small</span>
                     </div>
 
                     <div class="param-group">
@@ -249,7 +226,6 @@
                             <input type="range" id="trainSplit" min="0.3" max="1.0" step="0.05" value="0.8">
                             <input type="number" class="param-input" id="trainSplitInput" value="0.8" step="0.05" min="0.3" max="1.0">
                         </div>
-                        <span class="param-help">Portion of data used for training (0.8 = 80% train, 20% test)</span>
                     </div>
 
                     <div class="param-group">
@@ -258,7 +234,6 @@
                             <input type="range" id="trainingSpeed" min="0.2" max="1.0" step="0.2" value="0.4">
                             <input type="number" class="param-input" id="trainingSpeedInput" value="0.4" step="0.2" min="0.2" max="1.0">
                         </div>
-                        <span class="param-help">5 speed levels: 1.0 (fast) to 0.2 (slow) - backend controls epoch timing</span>
                     </div>
 
                     <div class="param-group">
@@ -272,7 +247,6 @@
 
                 <!-- Advanced Features -->
                 <div class="card advanced-card">
-                    <h3> Advanced Features</h3>
                     <div class="feature-toggle">
                         <div class="toggle-item">
                             <label class="toggle-label">

@@ -50,9 +50,11 @@ document.addEventListener('DOMContentLoaded', function() {
         themeBtn.textContent = savedTheme === 'light' ? '🌙' : '☀️';
     }
 
-    // resume if user comes back from later steps
+    // resume if user comes back from later steps via proper navigation
     const st = loadState();
-    if (st.step >= 2 && st.trainingData) {
+    const cameFromNavigation = sessionStorage.getItem('navigatedFromPage');
+    
+    if (st.step >= 2 && st.trainingData && cameFromNavigation) {
         console.log('🔄 Resuming upload page from saved state');
         window.cleanedData = {
             x_values: st.trainingData.statistics.x_data,
@@ -75,6 +77,12 @@ document.addEventListener('DOMContentLoaded', function() {
             createRangePlot();
             createStatisticalSummary();
         }, 50);
+        // Clear the navigation flag after use
+        sessionStorage.removeItem('navigatedFromPage');
+    } else if (!cameFromNavigation) {
+        // On fresh page load/reload, reset to initial state
+        console.log('🔄 Fresh page load - resetting to initial state');
+        resetState();
     }
 
     setupEventListeners();
@@ -721,6 +729,7 @@ function showVisualizations() {
 
 function proceedToTraining() {
     advanceStep(2); // ensure state updated
+    sessionStorage.setItem('navigatedFromPage', 'upload');
     window.location.href = '/static/training.html';
 }
 
