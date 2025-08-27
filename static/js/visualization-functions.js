@@ -171,11 +171,13 @@ export function createDensityPlot() {
         },
         xaxis: {
             title: { text: x_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
         yaxis: {
             title: { text: y_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
@@ -240,10 +242,12 @@ export function createRangePlot() {
         },
         xaxis: {
             title: { text: 'Variables', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)'
         },
         yaxis: {
             title: { text: 'Range Value', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
@@ -328,10 +332,12 @@ export function createStatisticalSummary() {
         },
         xaxis: {
             title: { text: 'Statistics', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)'
         },
         yaxis: {
             title: { text: 'Value', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
