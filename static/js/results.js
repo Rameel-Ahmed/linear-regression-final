@@ -1,4 +1,4 @@
-import { setupSidebarToggle, showSuccessToast } from './helping_functions.js';
+import { setupSidebarToggle } from './helping_functions.js';
 import { loadState } from './state.js';
 
 // Global variables
@@ -351,7 +351,17 @@ function setupEventListeners() {
     }
     
     // Download buttons
-    document.getElementById('downloadPDF')?.addEventListener('click', downloadPDFReport);
+    const downloadPDFBtn = document.getElementById('downloadPDF');
+    if (downloadPDFBtn) {
+        console.log('🔗 Setting up downloadPDF event listener');
+        downloadPDFBtn.addEventListener('click', function(e) {
+            console.log('🖱️ Download PDF button clicked!');
+            downloadPDFReport();
+        });
+    } else {
+        console.warn('⚠️ downloadPDF button not found');
+    }
+    
     document.getElementById('downloadCSV')?.addEventListener('click', downloadCSVResults);
     document.getElementById('downloadBatchResults')?.addEventListener('click', downloadBatchPredictions);
     
@@ -792,14 +802,199 @@ function displayBatchResults() {
 
 // Download functions
 function downloadPDFReport() {
-    // Mock API call - replace with actual endpoint
+    console.log('🚀 NEW downloadPDFReport function called!');
+    console.log('📊 trainingResults:', trainingResults);
+    console.log('🤖 modelData:', modelData);
+    console.log('📚 jsPDF available:', !!window.jspdf);
+    
     try {
-        alert('PDF report download initiated! (Backend integration needed)');
-        // Actual implementation would call:
-        // fetch('/api/download-report', { method: 'POST', ... })
+        if (!trainingResults || !modelData) {
+            alert('No results data available for PDF generation');
+            return;
+        }
+
+        // Check if jsPDF is available
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert('PDF generation library not loaded. Please refresh the page and try again.');
+            return;
+        }
+
+        // Validate model data
+        if (!modelData.equation || !modelData.theta0 || !modelData.theta1) {
+            alert('Model data is incomplete. Please ensure training is completed first.');
+            return;
+        }
+
+        // Check if required DOM elements exist
+        const requiredElements = [
+            'learningRateValue', 'epochsValue', 'toleranceValue', 'earlyStoppingValue',
+            'trainingSpeedValue', 'trainSplit', 'xColumnValue', 'yColumnValue',
+            'ourModelR2', 'ourModelRmse', 'ourModelMae'
+        ];
+        
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        if (missingElements.length > 0) {
+            console.warn('⚠️ Missing DOM elements:', missingElements);
+            alert(`Some data elements are missing: ${missingElements.join(', ')}. Please refresh the page and try again.`);
+            return;
+        }
+
+        // Create new PDF document
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Set title
+        doc.setFontSize(20);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Linear Regression Model Summary', 105, 20, { align: 'center' });
+        
+        // Add model equation
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Model Equation:', 20, 40);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'normal');
+        doc.text(modelData.equation, 20, 50);
+        
+                // Add training parameters
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Training Parameters:', 20, 70);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        
+        let yPos = 80;
+        
+        // Safely get parameter values with fallbacks
+        const getParamValue = (elementId, fallback = 'N/A') => {
+            try {
+                const element = document.getElementById(elementId);
+                if (!element) {
+                    console.warn(`⚠️ Element with ID '${elementId}' not found, using fallback: ${fallback}`);
+                    return fallback;
+                }
+                const value = element.textContent?.trim();
+                return value || fallback;
+            } catch (error) {
+                console.warn(`⚠️ Error reading element '${elementId}':`, error);
+                return fallback;
+            }
+        };
+        
+        const params = [
+            `Learning Rate: ${getParamValue('learningRateValue', 'N/A')}`,
+            `Epochs: ${getParamValue('epochsValue', 'N/A')}`,
+            `Tolerance: ${getParamValue('toleranceValue', 'N/A')}`,
+            `Early Stopping: ${getParamValue('earlyStoppingValue', 'N/A')}`,
+            `Training Speed: ${getParamValue('trainingSpeedValue', 'N/A')}`,
+            `Train Split: ${getParamValue('trainSplit', '80%')}`,
+            `X Column: ${getParamValue('xColumnValue', 'X')}`,
+            `Y Column: ${getParamValue('yColumnValue', 'Y')}`
+        ];
+        
+        params.forEach(param => {
+            doc.text(param, 20, yPos);
+            yPos += 8;
+        });
+        
+        // Add model performance metrics
+        yPos += 10;
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Model Performance:', 20, yPos);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        yPos += 10;
+        
+        const metrics = [
+            `R² Score (Our Model): ${getParamValue('ourModelR2', 'N/A')}`,
+            `RMSE (Our Model): ${getParamValue('ourModelRmse', 'N/A')}`,
+            `MAE (Our Model): ${getParamValue('ourModelMae', 'N/A')}`
+        ];
+        
+        metrics.forEach(metric => {
+            doc.text(metric, 20, yPos);
+            yPos += 8;
+        });
+        
+        // Add sklearn comparison if available
+        if (window.sklearnResults) {
+            yPos += 10;
+            doc.setFontSize(16);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Scikit-Learn Comparison:', 20, yPos);
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            yPos += 10;
+            
+            const sklearnMetrics = [
+                `R² Score (Sklearn): ${getParamValue('sklearnR2', 'N/A')}`,
+                `RMSE (Sklearn): ${getParamValue('sklearnRmse', 'N/A')}`,
+                `MAE (Sklearn): ${getParamValue('sklearnMae', 'N/A')}`
+            ];
+            
+            sklearnMetrics.forEach(metric => {
+                doc.text(metric, 20, yPos);
+                yPos += 8;
+            });
+        }
+        
+        // Add data summary
+        yPos += 10;
+        doc.setFontSize(16);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Data Summary:', 20, yPos);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'normal');
+        yPos += 8;
+        
+        if (trainingResults.csvData && Array.isArray(trainingResults.csvData)) {
+            const totalPoints = trainingResults.csvData.length;
+            const trainSplitText = getParamValue('trainSplit', '80%');
+            const trainSplitPercent = parseFloat(trainSplitText) || 80;
+            
+            doc.text(`Total Data Points: ${totalPoints}`, 20, yPos);
+            yPos += 8;
+            doc.text(`Training Data Points: ${Math.floor(totalPoints * (trainSplitPercent / 100))}`, 20, yPos);
+            yPos += 8;
+            doc.text(`Test Data Points: ${Math.ceil(totalPoints * (1 - trainSplitPercent / 100))}`, 20, yPos);
+        } else {
+            doc.text('Data Summary: Not available', 20, yPos);
+        }
+        
+        // Add timestamp
+        yPos += 15;
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'italic');
+        doc.text(`Report generated on: ${new Date().toLocaleString()}`, 20, yPos);
+        
+        // Save the PDF
+        doc.save('linear_regression_model_summary.pdf');
+        
+        // Show success message
+        alert('PDF Generated Successfully! Model summary has been downloaded.');
+        
     } catch (error) {
-        console.error('Error downloading PDF:', error);
-        alert('Error generating PDF report');
+        console.error('❌ Error generating PDF:', error);
+        console.error('❌ Error details:', {
+            message: error.message,
+            stack: error.stack,
+            trainingResults: !!trainingResults,
+            modelData: !!modelData,
+            jsPDF: !!window.jspdf
+        });
+        
+        // Show more specific error message
+        let errorMessage = 'Error generating PDF report. ';
+        if (error.message.includes('jsPDF')) {
+            errorMessage += 'PDF library error. Please refresh the page.';
+        } else if (error.message.includes('text')) {
+            errorMessage += 'Text rendering error. Please try again.';
+        } else {
+            errorMessage += 'Please try again.';
+        }
+        
+        alert(errorMessage);
     }
 }
 
@@ -876,4 +1071,5 @@ function closeBanner() {
 
 // Make the function available globally for inline onclick handler
 window.closeBanner = closeBanner;
+window.downloadPDFReport = downloadPDFReport;
 
