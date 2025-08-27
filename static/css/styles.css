@@ -229,29 +229,35 @@ body {
 /* Data Visualization Grid */
 .visualization-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1.5rem;
     margin-top: 1rem;
 }
 
 .visualization-grid .chart-container.large {
-    grid-column: span 2;
+    grid-column: 1;
+    min-height: 450px;
+    max-height: 550px;
 }
 
-@media (max-width: 1200px) {
+@media (min-width: 1200px) {
+    .visualization-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+    
     .visualization-grid .chart-container.large {
-        grid-column: span 1;
+        grid-column: span 2;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1199px) {
     .visualization-grid {
         grid-template-columns: 1fr;
         gap: 1rem;
     }
     
     .visualization-grid .chart-container.large {
-        grid-column: span 1;
+        grid-column: 1;
     }
 }
 
@@ -270,16 +276,24 @@ body {
     font-size: 1.1rem;
 }
 
+.chart-container {
+    min-height: 400px;
+    max-height: 500px;
+    overflow: hidden;
+}
+
 .chart-container canvas,
 .chart-container div {
     width: 100% !important;
-    height: 320px !important;
+    height: 100% !important;
+    max-height: 400px !important;
 }
 
 /* Plotly.js specific styling */
 .chart-container .js-plotly-plot {
     width: 100% !important;
     height: 100% !important;
+    max-height: 400px !important;
 }
 
 /* Transparent Plotly modebar */
@@ -1218,36 +1232,34 @@ body {
     overflow-x: auto;
     margin-bottom: 1rem;
     border-radius: 8px;
-    border: 1px solid #535457;
+    border: 1px solid var(--border-color);
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--card-bg);
 }
 
 th, td {
     padding: 0.75rem;
     text-align: center;
-    border-bottom: 1px solid #606264;
+    border-bottom: 1px solid var(--border-color);
     font-size: 0.875rem;
 }
 
 th {
-    background: #f7fafc;
+    background: var(--stats-bg);
     text-align: center;
-
     font-weight: 600;
-    color: #2d3748;
+    color: var(--text-primary);
     position: sticky;
     top: 0;
 }
 
 td {
-    color: #4a5568;
+    color: var(--text-secondary);
     text-align: center;
-
 }
 
 .data-info {
@@ -1274,23 +1286,32 @@ td {
 
 .selector-group label {
     font-weight: 600;
-    color: #2d3748;
+    color: var(--text-primary);
 }
 
 select {
     padding: 0.75rem;
-    border: 1px solid #cbd5e0;
+    border: 1px solid var(--border-color);
     border-radius: 8px;
-    background: white;
+    background: var(--card-bg);
     font-size: 0.875rem;
     transition: border-color 0.3s ease;
+    color: var(--text-primary);
 }
 
 select:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(99, 179, 237, 0.1);
 }
+
+/* Select option styling for theme consistency */
+select option {
+    background: var(--card-bg);
+    color: var(--text-primary);
+}
+
+
 
 /* Chart Container */
 .chart-container {

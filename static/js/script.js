@@ -29,19 +29,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const themeBtn = document.getElementById('themeBtn');
     console.log('Theme button found:', !!themeBtn);
     
-    if (themeBtn) {
-        themeBtn.onclick = function() {
-            console.log('🎯 THEME CLICKED!');
-            const current = document.documentElement.getAttribute('data-theme') || 'light';
-            const newTheme = current === 'light' ? 'dark' : 'light';
-            
-            document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            this.textContent = newTheme === 'light' ? '🌙' : '☀️';
-            
-            console.log('Theme changed:', current, '->', newTheme);
-        };       
-    }
+            if (themeBtn) {
+            themeBtn.onclick = function() {
+                console.log('🎯 THEME CLICKED!');
+                const current = document.documentElement.getAttribute('data-theme') || 'light';
+                const newTheme = current === 'light' ? 'dark' : 'light';
+                
+                document.documentElement.setAttribute('data-theme', newTheme);
+                localStorage.setItem('theme', newTheme);
+                this.textContent = newTheme === 'light' ? '🌙' : '☀️';
+                
+                // Update chart colors when theme changes
+                updateChartColors();
+                
+                console.log('Theme changed:', current, '->', newTheme);
+            };       
+        }
 
     // Initialize theme
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -735,3 +738,19 @@ function proceedToTraining() {
 
 // expose globally for inline HTML fallback
 window.proceedToTraining = proceedToTraining;
+
+// ============================================================================
+// CHART THEME UPDATES
+// ============================================================================
+
+function updateChartColors() {
+    // Recreate all charts with new theme colors
+    if (window.cleanedData && window.cleanedDataColumns) {
+        setTimeout(() => {
+            createScatterPlot();
+            createDensityPlot();
+            createRangePlot();
+            createStatisticalSummary();
+        }, 100);
+    }
+}

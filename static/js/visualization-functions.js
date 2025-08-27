@@ -2,6 +2,20 @@
 // VISUALIZATION FUNCTIONS MODULE - Using Plotly.js with Backend Statistics
 // ============================================================================
 
+// Function to get current theme colors
+function getThemeColors() {
+    const root = document.documentElement;
+    const colors = {
+        textPrimary: getComputedStyle(root).getPropertyValue('--text-primary') || '#1a202c',
+        textSecondary: getComputedStyle(root).getPropertyValue('--text-secondary') || '#4a5568',
+        cardBg: getComputedStyle(root).getPropertyValue('--card-bg') || 'rgba(255,255,255,0.8)',
+        borderColor: getComputedStyle(root).getPropertyValue('--border-color') || 'rgba(0,0,0,0.1)'
+    };
+    
+    console.log('🎨 Theme colors loaded:', colors);
+    return colors;
+}
+
 // Only keep median calculation since backend doesn't provide it
 export function calculateMedian(values) {
     const sorted = [...values].sort((a, b) => a - b);
@@ -63,18 +77,21 @@ export function createScatterPlot() {
         }
     ];
     
+    const colors = getThemeColors();
     const layout = {
         title: {
             text: `${y_column} vs ${x_column} - Distribution & Trend`,
-            font: { size: 16, color: '#1a202c' }
+            font: { size: 16, color: colors.textPrimary }
         },
         xaxis: {
-            title: { text: x_column, font: { size: 14, color: '#4a5568' } },
+            title: { text: x_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
         yaxis: {
-            title: { text: y_column, font: { size: 14, color: '#4a5568' } },
+            title: { text: y_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
+            tickfont: { color: colors.textPrimary },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
@@ -83,14 +100,13 @@ export function createScatterPlot() {
         legend: {
             x: 0.02,
             y: 0.98,
-            bgcolor: 'rgba(255,255,255,0.8)',
-            bordercolor: 'rgba(0,0,0,0.1)',
+            bgcolor: colors.cardBg,
+            bordercolor: colors.borderColor,
             borderwidth: 1
         },
         margin: { l: 60, r: 30, t: 60, b: 60 },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        template: 'plotly_light'
+        paper_bgcolor: 'rgba(0,0,0,0)'
     };
     
     const config = {
@@ -147,26 +163,26 @@ export function createDensityPlot() {
             `<extra></extra>`
     };
     
+    const colors = getThemeColors();
     const layout = {
         title: {
             text: `${y_column} vs ${x_column} - Density Heatmap`,
-            font: { size: 16, color: '#1a202c' }
+            font: { size: 16, color: colors.textPrimary }
         },
         xaxis: {
-            title: { text: x_column, font: { size: 14, color: '#4a5568' } },
+            title: { text: x_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
         yaxis: {
-            title: { text: y_column, font: { size: 14, color: '#4a5568' } },
+            title: { text: y_column, font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
         hovermode: 'closest',
         margin: { l: 60, r: 30, t: 60, b: 60 },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        template: 'plotly_light'
+        paper_bgcolor: 'rgba(0,0,0,0)'
     };
     
     const config = {
@@ -216,24 +232,24 @@ export function createRangePlot() {
             `<extra></extra>`
     };
     
+    const colors = getThemeColors();
     const layout = {
         title: {
             text: 'Min-Max Range Analysis',
-            font: { size: 16, color: '#1a202c' }
+            font: { size: 16, color: colors.textPrimary }
         },
         xaxis: {
-            title: { text: 'Variables', font: { size: 14, color: '#4a5568' } },
+            title: { text: 'Variables', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)'
         },
         yaxis: {
-            title: { text: 'Range Value', font: { size: 14, color: '#4a5568' } },
+            title: { text: 'Range Value', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
         margin: { l: 60, r: 30, t: 60, b: 60 },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        template: 'plotly_light'
+        paper_bgcolor: 'rgba(0,0,0,0)'
     };
     
     const config = {
@@ -304,17 +320,18 @@ export function createStatisticalSummary() {
             `<extra></extra>`
     };
     
+    const colors = getThemeColors();
     const layout = {
         title: {
             text: 'Statistical Summary Comparison',
-            font: { size: 16, color: '#1a202c' }
+            font: { size: 16, color: colors.textPrimary }
         },
         xaxis: {
-            title: { text: 'Statistics', font: { size: 14, color: '#4a5568' } },
+            title: { text: 'Statistics', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)'
         },
         yaxis: {
-            title: { text: 'Value', font: { size: 14, color: '#4a5568' } },
+            title: { text: 'Value', font: { size: 14, color: colors.textPrimary, weight: 'bold' } },
             gridcolor: 'rgba(0,0,0,0.1)',
             zeroline: false
         },
@@ -324,14 +341,13 @@ export function createStatisticalSummary() {
         legend: {
             x: 0.02,
             y: 0.98,
-            bgcolor: 'rgba(255,255,255,0.8)',
-            bordercolor: 'rgba(0,0,0,0.1)',
+            bgcolor: colors.cardBg,
+            bordercolor: colors.borderColor,
             borderwidth: 1
         },
         margin: { l: 60, r: 30, t: 60, b: 60 },
         plot_bgcolor: 'rgba(0,0,0,0)',
-        paper_bgcolor: 'rgba(0,0,0,0)',
-        template: 'plotly_light'
+        paper_bgcolor: 'rgba(0,0,0,0)'
     };
     
     const config = {
