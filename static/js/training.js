@@ -1,13 +1,35 @@
 
 import { setupSidebarToggle } from './helping_functions.js';
 import { loadState, advanceStep } from './state.js';
+
+// Function to get current theme colors
+function getThemeColors() {
+    const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    console.log('🎨 Current theme detected:', currentTheme);
+    
+    if (currentTheme === 'dark') {
+        return {
+            textPrimary: '#ffffff',
+            textSecondary: '#e2e8f0',
+            cardBg: 'rgba(45, 55, 72, 0.8)',
+            borderColor: 'rgba(74, 85, 104, 0.3)'
+        };
+    } else {
+        return {
+            textPrimary: '#000000',
+            textSecondary: '#4a5568',
+            cardBg: 'rgba(255, 255, 255, 0.8)',
+            borderColor: 'rgba(0, 0, 0, 0.1)'
+        };
+    }
+}
 const stPage = loadState();
 if (!localStorage.getItem('trainingData') && stPage.trainingData) {
     localStorage.setItem('trainingData', JSON.stringify(stPage.trainingData));
 }
 
 // Global variables for collapsible summary
-let summaryExpanded = true;
+let summaryExpanded = false;
 
 // Function to toggle summary section
 function toggleSummary() {
@@ -79,6 +101,16 @@ async function loadTrainingData() {
             console.log('✅ Summary updated successfully');
         } catch (e) {
             console.error('❌ Error updating summary:', e);
+        }
+        
+        // Initialize summary in collapsed state
+        const summaryContent = document.getElementById('summaryContent');
+        const toggleIcon = document.getElementById('summaryToggleIcon');
+        if (summaryContent && toggleIcon) {
+            summaryContent.classList.add('collapsed');
+            toggleIcon.textContent = '→';
+            toggleIcon.classList.add('rotated');
+            console.log('📊 Summary initialized in collapsed state');
         }
         
         try {
@@ -217,6 +249,10 @@ function initializeTheme() {
             this.textContent = newTheme === 'light' ? '🌙' : '☀️';
             
             console.log('✅ Theme updated to:', newTheme);
+            console.log('🎨 HTML data-theme attribute:', document.documentElement.getAttribute('data-theme'));
+            
+            // Update chart colors when theme changes
+            updateChartColors();
         };
     } else {
         console.error('❌ Theme button not found!');
@@ -467,7 +503,7 @@ function createScatterChart() {
             plugins: {
                 title: { 
                     display: true, 
-                    text: `${trainingData.yColumn} vs ${trainingData.xColumn}`,
+                    text: 'Data & Regression Line',
                     font: { size: 16, weight: 'bold' }
                 },
                 legend: { position: 'bottom' }
@@ -534,6 +570,9 @@ function createScatterPlot(data, xCol, yCol) {
     }
     
     const chartData = data.map(row => ({x: row[xCol], y: row[yCol]}));
+    const colors = getThemeColors();
+    
+    console.log('🎨 Scatter plot using colors:', colors);
     
     window.scatterChart = new Chart(ctx, {
         type: 'scatter',
@@ -550,13 +589,36 @@ function createScatterPlot(data, xCol, yCol) {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                x: { title: { display: true, text: xCol }},
-                y: { title: { display: true, text: yCol }}
+                x: { 
+                    title: { 
+                        display: true, 
+                        text: xCol,
+                        color: colors.textPrimary,
+                        font: { weight: 'bold' }
+                    },
+                    ticks: { color: colors.textPrimary },
+                    grid: { color: colors.borderColor }
+                },
+                y: { 
+                    title: { 
+                        display: true, 
+                        text: yCol,
+                        color: colors.textPrimary,
+                        font: { weight: 'bold' }
+                    },
+                    ticks: { color: colors.textPrimary },
+                    grid: { color: colors.borderColor }
+                }
             },
-            plugins: {
-                title: { display: true, text: `${yCol} vs ${xCol}` },
-                legend: { display: false }
-            }
+                    plugins: {
+            title: { 
+                display: true, 
+                text: 'Data & Regression Line',
+                color: colors.textPrimary,
+                font: { size: 16, weight: 'bold' }
+            },
+            legend: { display: false }
+        }
         }
     });
 }
@@ -580,6 +642,8 @@ function createCostChart() {
     }
     
     try {
+        const colors = getThemeColors();
+        console.log('🎨 Cost chart using colors:', colors);
         window.costChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -606,19 +670,32 @@ function createCostChart() {
                 },
             scales: {
                 x: { 
-                        title: { display: true, text: 'Epochs', font: { weight: 'bold' } },
-                        grid: { color: 'rgba(0,0,0,0.1)' }
+                        title: { 
+                            display: true, 
+                            text: 'Epochs', 
+                            color: colors.textPrimary,
+                            font: { weight: 'bold' } 
+                        },
+                        ticks: { color: colors.textPrimary },
+                        grid: { color: colors.borderColor }
                 },
                 y: { 
-                    title: { display: true, text: 'Cost Function', font: { weight: 'bold' } },
-                        beginAtZero: false,
-                        grid: { color: 'rgba(0,0,0,0.1)' }
+                    title: { 
+                        display: true, 
+                        text: 'Cost Function', 
+                        color: colors.textPrimary,
+                        font: { weight: 'bold' } 
+                    },
+                    ticks: { color: colors.textPrimary },
+                    beginAtZero: false,
+                        grid: { color: colors.borderColor }
                 }
             },
             plugins: {
                 title: { 
                     display: true, 
                     text: 'Training Cost Over Time',
+                    color: colors.textPrimary,
                     font: { size: 16, weight: 'bold' }
                 },
                     legend: { display: false },
@@ -737,6 +814,13 @@ function startTraining() {
     formData.append('early_stopping', earlyStopping);
     formData.append('training_speed', trainingSpeed);
     formData.append('train_split', trainSplit);
+    
+    // Show equation display when training starts
+    const equationDisplay = document.getElementById('equationDisplay');
+    if (equationDisplay) {
+        equationDisplay.style.display = 'block';
+        console.log('📊 Equation display shown');
+    }
     
     // Auto-expand charts when training starts
     if (!isExpanded) {
@@ -1314,6 +1398,13 @@ async function stopTraining() {
         console.error('❌ Error stopping backend training:', error);
     }
     
+    // Hide equation display when training stops
+    const equationDisplay = document.getElementById('equationDisplay');
+    if (equationDisplay) {
+        equationDisplay.style.display = 'none';
+        console.log('📊 Equation display hidden');
+    }
+    
     updateStatus('Training stopped');
 }
 
@@ -1590,6 +1681,37 @@ const st = loadState();
 if (!st.step || st.step < 2) {
     window.location.href = '/static/index.html';
 }
+
+// ============================================================================
+// CHART THEME UPDATES
+// ============================================================================
+
+function updateChartColors() {
+    const colors = getThemeColors();
+    console.log('🎨 Updating chart colors to:', colors);
+    
+    // Update scatter chart colors
+    if (window.scatterChart) {
+        window.scatterChart.options.scales.x.title.color = colors.textPrimary;
+        window.scatterChart.options.scales.y.title.color = colors.textPrimary;
+        window.scatterChart.options.scales.x.ticks.color = colors.textPrimary;
+        window.scatterChart.options.scales.y.ticks.color = colors.textPrimary;
+        window.scatterChart.options.plugins.title.color = colors.textPrimary;
+        window.scatterChart.update('none');
+    }
+    
+    // Update cost chart colors
+    if (window.costChart) {
+        window.costChart.options.scales.x.title.color = colors.textPrimary;
+        window.costChart.options.scales.y.title.color = colors.textPrimary;
+        window.costChart.options.scales.x.ticks.color = colors.textPrimary;
+        window.costChart.options.scales.y.ticks.color = colors.textPrimary;
+        window.costChart.options.plugins.title.color = colors.textPrimary;
+        window.costChart.update('none');
+    }
+}
+
+
 
 
 

@@ -39,22 +39,20 @@
             <div class="training-left">
                 <div class="card viz-card">
                     <div class="viz-header">
-                        <h3> Live Training Visualization</h3>
+                        <h3>Live Training Visualization</h3>
+                        <div class="equation-display" id="equationDisplay" style="display: none;">y = NaN + NaN·x</div>
                         <div class="viz-controls">
                             <button class="expand-btn" id="expandChartsBtn" title="Expand Charts" style="display: none;">⛶</button>
                             <button class="close-expand-btn" id="closeExpandBtn" title="Close Expanded View" style="display: none;">✕</button>
-                            <div class="equation-display" id="equationDisplay">y = NaN + NaN·x</div>
                         </div>
                     </div>
 
                     <!-- Main Training Charts - Bigger Size -->
                     <div class="main-charts-grid" id="mainChartsGrid">
                         <div class="chart-container main-chart" id="costContainer">
-                            <h4> Training Cost Over Time</h4>
                             <canvas id="costChart"></canvas>
                         </div>
                         <div class="chart-container main-chart" id="scatterContainer">
-                            <h4> Data & Regression Line</h4>
                             <canvas id="scatterChart"></canvas>
                         </div>
                     </div>
