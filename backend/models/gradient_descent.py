@@ -11,7 +11,20 @@ import numpy as np
 
 
 class GradientDescent:
-    """Compute cost and gradients for a linear model."""
+    """Compute cost and gradients for y = θ₀ + θ₁·x.
+
+    Parameters
+    ----------
+    x_data, y_data : np.ndarray
+        *Normalized* 1-D arrays.
+
+    Example
+    -------
+    >>> gd = GradientDescent(x_norm, y_norm)
+    >>> theta = np.array([0.0, 0.0])
+    >>> cost  = gd.compute_cost(theta)
+    >>> grad0, grad1 = gd.compute_gradients(theta)
+    """
 
     def __init__(self, x_data: np.ndarray, y_data: np.ndarray) -> None:
         """Build internal design matrix and store references."""

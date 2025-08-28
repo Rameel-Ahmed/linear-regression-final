@@ -16,7 +16,17 @@ import numpy as np
 
 
 class DataNormalizer:
-    """Handles normalization and conversion back to original scale."""
+    """Handles normalization and conversion back to original scale.
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> x = np.array([1, 2, 3, 4])
+    >>> y = np.array([2, 4, 6, 8])
+    >>> norm = DataNormalizer(x, y)
+    >>> x_n, y_n = norm.normalize(x, y)
+    >>> preds_orig = norm.denormalize_predictions(y_n)
+    """
 
     def __init__(self, x_data: np.ndarray, y_data: np.ndarray) -> None:
         """Compute and stash means and standard deviations."""
@@ -26,13 +36,12 @@ class DataNormalizer:
         if x.size == 0 or y.size == 0:
             raise ValueError("x_data and y_data must be non-empty")
 
-        # Private, internal attributes -> double-underscore
         self.__x_mean: float = float(np.mean(x))
         self.__x_std: float = float(np.std(x))
         self.__y_mean: float = float(np.mean(y))
         self.__y_std: float = float(np.std(y))
 
-        # Prevent division by zero for zero-variance arrays
+        # Prevent division by zero for zero-va riance arrays
         if self.__x_std == 0.0:
             self.__x_std = 1.0
         if self.__y_std == 0.0:

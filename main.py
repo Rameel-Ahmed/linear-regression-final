@@ -1,4 +1,7 @@
-# main.py
+"""Application entrypoint for the Linear Regression API.
+
+Configures CORS, static files, routes, and basic application logging.
+"""
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,6 +9,14 @@ from fastapi.staticfiles import StaticFiles
 from routes.user_routes import user_router
 from fastapi.responses import HTMLResponse
 from fastapi import HTTPException
+import logging
+
+# Basic console logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Linear Regression API", version="1.0.0")
 
@@ -26,6 +37,7 @@ app.add_middleware(
 async def root() -> HTMLResponse:
     """Serve the main HTML page."""
     try:
+        logger.info("Serving static/index.html")
         with open("static/index.html", "r", encoding="utf-8") as f:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:

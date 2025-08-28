@@ -1,10 +1,16 @@
-"""
-Sklearn Comparison Module for Linear Regression Models.
+"""backend.utils.sklearn_comparison
++------------------------------------------------
+Run a quick check by fitting scikit-learn’s ``LinearRegression`` to
+the same dataset and reporting coefficients + metrics.
 
-Fits sklearn's LinearRegression to the provided data and returns
-coefficients, predictions, and comparison metrics. This is used to
-validate that the custom implementation produces results in line
-with a well-tested library.
+Example
+-------
+>>> from backend.utils.sklearn_comparison import SklearnComparison
+>>> x = np.arange(10)
+>>> y = 2 * x + 1
+>>> comp = SklearnComparison()
+>>> comp.calculate_sklearn_results(x, y)["metrics"]["r2"]
+1.0
 """
 
 import numpy as np
@@ -27,7 +33,7 @@ class SklearnComparison:
             y: np.ndarray = np.asarray(y_data, dtype=float)
             self.__sklearn_model.fit(X, y)
             y_pred: np.ndarray = self.__sklearn_model.predict(X)
-            metrics: dict[str, float] = self.__calculate_comparison_metrics(y, y_pred)
+            metrics: dict[str, float] = self._calculate_comparison_metrics(y, y_pred)
             return {
                 "sklearn_coefficients": {
                     "intercept": float(self.__sklearn_model.intercept_),
@@ -41,13 +47,14 @@ class SklearnComparison:
         except Exception as exc:
             return {"error": True, "message": f"Sklearn comparison failed: {exc}"}
 
-    def __calculate_comparison_metrics(self, y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
-        """Return rmse, mae, and r2 for sklearn predictions."""
+    @staticmethod
+    def _calculate_comparison_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+        """Return RMSE, MAE, and R² for sklearn predictions (static)."""
         try:
             return {
                 "rmse": float(np.sqrt(mean_squared_error(y_true, y_pred))),
                 "mae": float(mean_absolute_error(y_true, y_pred)),
-                "r2": float(r2_score(y_true, y_pred))
+                "r2": float(r2_score(y_true, y_pred)),
             }
         except Exception:
             return {"rmse": 0.0, "mae": 0.0, "r2": 0.0}

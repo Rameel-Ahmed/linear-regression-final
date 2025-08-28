@@ -10,7 +10,7 @@ can be streamed to a client.
 """
 
 import numpy as np
-from typing import Generator, Any
+from typing import Generator, Any, Tuple
 
 from .metrics_calculator import MetricsCalculator
 from .data_normalizer import DataNormalizer
@@ -175,6 +175,16 @@ class LinearRegressionModel:
         return self.__normalizer.get_original_scale_parameters(
             self.__theta0, self.__theta1
         )
+
+    @property
+    def theta0(self) -> float:  # noqa: D401 – simple property doc
+        """Current θ₀ on the original data scale (read-only)."""
+        return self.get_original_scale_parameters()["theta0"]
+
+    @property
+    def theta1(self) -> float:
+        """Current θ₁ on the original data scale (read-only)."""
+        return self.get_original_scale_parameters()["theta1"]
 
     def predict(self, x_values: np.ndarray) -> np.ndarray:
         """Alias kept for backward compatibility: predicts on original scale."""

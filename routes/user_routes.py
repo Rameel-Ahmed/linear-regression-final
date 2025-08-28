@@ -1,6 +1,20 @@
-# routes/user_routes.py
+"""routes.user_routes
++---------------------------------------------
+Public FastAPI router wiring HTTP endpoints
+to :class:`controller.user_controller.UserController` methods.
 
-from fastapi import APIRouter, UploadFile, Form
+This module contains *no* business logic; it only exposes a shared
+`user_router` that other modules can mount under a path prefix.
+
+Example
+-------
+>>> from fastapi import FastAPI
+>>> from routes.user_routes import user_router
+>>> app = FastAPI()
+>>> app.include_router(user_router, prefix="/api/v1")
+"""
+
+from fastapi import APIRouter
 from controller.user_controller import UserController
 from fastapi.responses import HTMLResponse, StreamingResponse
 

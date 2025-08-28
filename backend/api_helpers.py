@@ -14,6 +14,7 @@ layer can stay clean and consistent.
 """
 
 import asyncio
+import logging
 import io
 import json
 
@@ -21,10 +22,11 @@ import numpy as np
 import pandas as pd
 from fastapi import UploadFile
 
-from backend.utils.csv_loader import CSVLoader
-from backend.models.linear_regression import LinearRegressionModel
-from backend.utils.sklearn_comparison import SklearnComparison
+from backend.utils import CSVLoader
+from backend.models import LinearRegressionModel
+from backend.utils import SklearnComparison
 
+logger = logging.getLogger(__name__)
 
 
 class APIHelper:
@@ -39,14 +41,21 @@ class APIHelper:
         """Read uploaded CSV bytes into a pandas DataFrame."""
         try:
             content = await file.read()
+            logger.info("Read CSV upload: %s bytes", len(content))
             return pd.read_csv(io.StringIO(content.decode("utf-8")))
         except Exception as exc:
+            logger.exception("Failed to read CSV upload")
             raise RuntimeError(f"Failed to read CSV upload: {exc}") from exc
 
     def analyze_data_quality(self, df: pd.DataFrame, x_column: str, y_column: str) -> dict[str, object]:
         """Use CSVLoader to analyze data quality and return the result."""
         loader = CSVLoader(x_column, y_column)
-        return loader.analyze_data_quality(df)
+        result = loader.analyze_data_quality(df)
+        if isinstance(result, dict) and result.get("error"):
+            logger.warning("Data quality analysis returned error: %s", result.get("message"))
+        else:
+            logger.info("Data quality analysis complete for columns x=%s, y=%s", x_column, y_column)
+        return result
 
     def store_processed_data(
         self,
@@ -65,6 +74,7 @@ class APIHelper:
             "csv_loader": loader,
             "cleaning_options": cleaning_options
         })
+        logger.info("Stored processed data for filename=%s; cleaned_shape=%s", filename, tuple(df_clean.shape))
 
     def prepare_process_response(
         self,
@@ -98,6 +108,7 @@ class APIHelper:
     def setup_training(self, train_split: float) -> dict[str, object]:
         """Initialize the LinearRegressionModel and store training state."""
         if "cleaned_data" not in self.session_data:
+            logger.warning("Attempted to start training without cleaned data")
             raise ValueError("No cleaned data available for training")
 
         df_clean: pd.DataFrame = self.session_data["cleaned_data"]  # type: ignore
@@ -113,6 +124,7 @@ class APIHelper:
         model.set_training_data(split_result["x_train"], split_result["y_train"])
 
         self._initialize_training_state(model)
+        logger.info("Training setup complete: train_ratio=%.2f, train_size=%d", train_split, len(split_result["x_train"]))
 
         return {"model": model, "x_data": x_data, "y_data": y_data, "split_result": split_result}
 
@@ -135,6 +147,7 @@ class APIHelper:
         prefix expected by a simple server-sent-events client.
         """
         try:
+            logger.info("Training stream started: epochs=%d, lr=%.6f, early_stopping=%s", epochs, learning_rate, early_stopping)
             x_test = split_result["x_test"]
             y_test = split_result["y_test"]
             x_train_orig = split_result["x_train"]
@@ -149,6 +162,7 @@ class APIHelper:
                 early_stopping=early_stopping
             ):
                 if not self._should_continue_training():
+                    logger.info("Training stream stopped by request")
                     break
 
                 await self._handle_training_pause()
@@ -160,9 +174,11 @@ class APIHelper:
                     await asyncio.sleep(epoch_delay)
 
             final_data = await self._prepare_final_results(model, x_data, y_data, x_test, y_test)
+            logger.info("Training stream completed")
             yield f"data: {json.dumps(final_data)}\n\n"
 
         except Exception as exc:
+            logger.exception("Training stream failed")
             yield f"data: {json.dumps({'error': True, 'message': str(exc)})}\n\n"
         finally:
             self._cleanup_training_state()
@@ -173,7 +189,8 @@ class APIHelper:
         """Mark training active and store model in session."""
         self.session_data.update({"training_active": True, "training_paused": False, "training_model": model})
 
-    def _get_training_delay(self, training_speed: float) -> float:
+    @staticmethod
+    def _get_training_delay(training_speed: float) -> float:
         """Map user speed to a sensible per-epoch delay (seconds)."""
         speed_delays: dict[float, float] = {1.0: 0.1, 0.8: 0.3, 0.6: 0.6, 0.4: 1.0, 0.2: 1.5}
         closest = min(speed_delays.keys(), key=lambda x: abs(x - training_speed))
@@ -186,6 +203,7 @@ class APIHelper:
     async def _handle_training_pause(self) -> None:
         """Await while the session indicates training should remain paused."""
         while self.session_data.get("training_paused", False) and self.session_data.get("training_active", False):
+            logger.info("Training paused; waiting...")
             await asyncio.sleep(0.5)
 
     def _prepare_epoch_response(
@@ -236,6 +254,7 @@ class APIHelper:
             ss_tot = float(np.sum((y_test - np.mean(y_test)) ** 2))
             test_r2 = 1.0 - (ss_res / ss_tot) if ss_tot != 0.0 else 0.0
         except Exception:
+            logger.exception("Final results computation failed; defaulting metrics")
             test_mse = 0.0
             test_r2 = 0.0
 
@@ -270,8 +289,10 @@ class APIHelper:
             comp = SklearnComparison()
             return comp.calculate_sklearn_results(x_data, y_data)
         except Exception:
+            logger.exception("Sklearn comparison failed")
             return None
 
     def _cleanup_training_state(self) -> None:
         """Clear training-related flags in session_data."""
         self.session_data.update({"training_active": False, "training_paused": False})
+        logger.info("Training state cleaned up")

@@ -20,9 +20,9 @@ class MetricsCalculator:
     def calculate_metrics(self, y_true: np.ndarray, y_pred: np.ndarray, epoch: int) -> dict[str, float]:
         """Compute RMSE, MAE, R² and append values to internal history."""
         try:
-            rmse: float = self.__calculate_rmse(y_true, y_pred)
-            mae: float = self.__calculate_mae(y_true, y_pred)
-            r2: float = self.__calculate_r2(y_true, y_pred)
+            rmse: float = self._calculate_rmse(y_true, y_pred)
+            mae: float = self._calculate_mae(y_true, y_pred)
+            r2: float = self._calculate_r2(y_true, y_pred)
             metrics: dict[str, float] = {"rmse": rmse, "mae": mae, "r2": r2}
             self.__store_metrics(metrics, epoch)
             return metrics
@@ -60,22 +60,24 @@ class MetricsCalculator:
         """Return a shallow copy of the stored metrics history."""
         return dict(self.__metrics_history)
 
-    # Private helpers
 
-    def __calculate_rmse(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Compute root mean squared error."""
+    @staticmethod
+    def _calculate_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Compute root mean squared error (static)."""
         y_t = np.asarray(y_true, dtype=float)
         y_p = np.asarray(y_pred, dtype=float)
         return float(np.sqrt(np.mean((y_t - y_p) ** 2)))
 
-    def __calculate_mae(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Compute mean absolute error."""
+    @staticmethod
+    def _calculate_mae(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Compute mean absolute error (static)."""
         y_t = np.asarray(y_true, dtype=float)
         y_p = np.asarray(y_pred, dtype=float)
         return float(np.mean(np.abs(y_t - y_p)))
 
-    def __calculate_r2(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
-        """Compute coefficient of determination (R²)."""
+    @staticmethod
+    def _calculate_r2(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        """Compute coefficient of determination (R²) (static)."""
         y_t = np.asarray(y_true, dtype=float)
         y_p = np.asarray(y_pred, dtype=float)
         ss_res = float(np.sum((y_t - y_p) ** 2))

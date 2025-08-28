@@ -1,12 +1,26 @@
-"""
-CSV Loader and Data Cleaning Module.
+"""backend.utils.csv_loader
++------------------------------------------------
+Load, inspect, and clean CSV datasets prior to linear-regression training.
 
-Loads CSV data, analyzes quality, and cleans it for linear
-regression training. Cleaning includes duplicate removal,
-outlier removal (IQR), missing-value handling, and coercing
-non-numeric columns. We normalize before training to improve
+* Duplicate, outlier, and NaN removal.
+* Coercion of numeric-looking strings.
+* Compact, human-readable cleaning summary for UI display.
+
+ We normalize before training to improve
 numerical stability; after training, predictions are mapped
 back to the original scale (denormalize) for interpretability.
+
+
+Example
+-------
+>>> import pandas as pd
+>>> from backend.utils.csv_loader import CSVLoader
+>>> df = pd.DataFrame({"x": [1, 2, 2, 3], "y": [2, 4, 4, 6]})
+>>> loader = CSVLoader("x", "y")
+>>> quality = loader.analyze_data_quality(df)
+>>> clean = loader.clean_data(df)
+>>> loader.get_cleaning_summary()["samples_removed"]
+1
 """
 
 import numpy as np
@@ -15,7 +29,7 @@ from typing import Any
 
 
 class CSVLoader:
-    """Load and clean CSV data for linear regression."""
+    """Load and clean CSV data for linear regression tasks."""
 
     def __init__(self, x_column: str, y_column: str) -> None:
         """Initialize loader with names of x and y columns."""
@@ -140,10 +154,15 @@ class CSVLoader:
             raise RuntimeError(f"Data cleaning failed: {exc}") from exc
 
     def get_cleaning_summary(self) -> dict[str, Any]:
-        """Return the last cleaning summary (copy to avoid mutation)."""
+        """Alias for :pyattr:`cleaning_summary` property (kept for legacy)."""
+        return self.cleaning_summary
+
+
+    @property
+    def cleaning_summary(self) -> dict[str, Any]:
+        """Read-only view of the most-recent cleaning summary."""
         return dict(self.__cleaning_summary)
 
-    # Private helpers - double-underscore because not accessed externally
 
     def __remove_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:
         """Remove duplicate rows and note how many were dropped."""
