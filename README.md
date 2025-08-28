@@ -76,17 +76,17 @@ This project follows a clean, modular architecture with clear separation of conc
 - **CORS Configuration**: Enables cross-origin requests
 
 **API Endpoints**:
-- `POST /api/process-data`: CSV processing and cleaning
-- `POST /api/start-training`: Initiates model training with streaming
-- `POST /api/pause-training`: Pauses ongoing training
-- `POST /api/resume-training`: Resumes paused training
-- `POST /api/stop-training`: Stops training completely
+- `POST /api/v1/process-data`: CSV processing and cleaning
+- `POST /api/v1/start-training`: Initiates model training with streaming
+- `POST /api/v1/pause-training`: Pauses ongoing training
+- `POST /api/v1/resume-training`: Resumes paused training
+- `POST /api/v1/stop-training`: Stops training completely
 
 **Dependencies**: FastAPI, Uvicorn, CORS middleware
 
 ### 🔧 Backend Modules (`backend/`)
 
-#### `backend/api_helpers.py`
+#### `backend/api/v1_helpers.py`
 - **Purpose**: Business logic layer that keeps the API server clean
 - **Key Responsibilities**:
   - CSV file reading and processing

@@ -1284,7 +1284,7 @@ async function startStreamingTraining(formData) {
     updateStatus("Starting training...");
 
     // Send POST request to start training
-    const response = await fetch("/api/start-training", {
+    const response = await fetch("/api/v1/start-training", {
       method: "POST",
       body: formData,
     });
@@ -1311,7 +1311,7 @@ async function startStreamingTraining(formData) {
     const handlePageUnload = () => {
       if (isTraining) {
         console.log("🛑 Page unloading - stopping training");
-        fetch("/api/stop-training", { method: "POST" }).catch(() => {});
+        fetch("/api/v1/stop-training", { method: "POST" }).catch(() => {});
       }
     };
     window.addEventListener("beforeunload", handlePageUnload);
@@ -1801,7 +1801,7 @@ async function pauseTraining() {
   if (!isTraining || isPaused) return;
 
   try {
-    const response = await fetch("/api/pause-training", {
+    const response = await fetch("/api/v1/pause-training", {
       method: "POST",
     });
     if (response.ok) {
@@ -1819,7 +1819,7 @@ async function resumeTraining() {
   if (!isTraining || !isPaused) return;
 
   try {
-    const response = await fetch("/api/resume-training", {
+    const response = await fetch("/api/v1/resume-training", {
       method: "POST",
     });
     if (response.ok) {
@@ -1854,7 +1854,7 @@ async function stopTraining() {
 
   // Stop backend training
   try {
-    const response = await fetch("/api/stop-training", {
+    const response = await fetch("/api/v1/stop-training", {
       method: "POST",
     });
     if (response.ok) {
