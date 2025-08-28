@@ -47,14 +47,22 @@ class APIHelper:
             logger.exception("Failed to read CSV upload")
             raise RuntimeError(f"Failed to read CSV upload: {exc}") from exc
 
-    def analyze_data_quality(self, df: pd.DataFrame, x_column: str, y_column: str) -> dict[str, object]:
+    def analyze_data_quality(
+        self, df: pd.DataFrame, x_column: str, y_column: str
+    ) -> dict[str, object]:
         """Use CSVLoader to analyze data quality and return the result."""
         loader = CSVLoader(x_column, y_column)
         result = loader.analyze_data_quality(df)
         if isinstance(result, dict) and result.get("error"):
-            logger.warning("Data quality analysis returned error: %s", result.get("message"))
+            logger.warning(
+                "Data quality analysis returned error: %s", result.get("message")
+            )
         else:
-            logger.info("Data quality analysis complete for columns x=%s, y=%s", x_column, y_column)
+            logger.info(
+                "Data quality analysis complete for columns x=%s, y=%s",
+                x_column,
+                y_column,
+            )
         return result
 
     def store_processed_data(
@@ -63,46 +71,85 @@ class APIHelper:
         df: pd.DataFrame,
         df_clean: pd.DataFrame,
         loader: CSVLoader,
-        cleaning_options: dict[str, object]
+        cleaning_options: dict[str, object],
     ) -> None:
         """Store cleaned data, loader and options into session_data."""
-        self.session_data.update({
-            "csv_data": df,
-            "columns": df.columns.tolist(),
-            "filename": filename,
-            "cleaned_data": df_clean,
-            "csv_loader": loader,
-            "cleaning_options": cleaning_options
-        })
-        logger.info("Stored processed data for filename=%s; cleaned_shape=%s", filename, tuple(df_clean.shape))
+        self.session_data.update(
+            {
+                "csv_data": df,
+                "columns": df.columns.tolist(),
+                "filename": filename,
+                "cleaned_data": df_clean,
+                "csv_loader": loader,
+                "cleaning_options": cleaning_options,
+            }
+        )
+        logger.info(
+            "Stored processed data for filename=%s; cleaned_shape=%s",
+            filename,
+            tuple(df_clean.shape),
+        )
 
     def prepare_process_response(
-        self,
-        filename: str,
-        df: pd.DataFrame,
-        df_clean: pd.DataFrame,
-        loader: CSVLoader
+        self, filename: str, df: pd.DataFrame, df_clean: pd.DataFrame, loader: CSVLoader
     ) -> dict[str, object]:
         """Prepare a structured response after processing an uploaded CSV."""
-        cleaning_options = self.session_data.get("cleaning_options", {})  # type: ignore
+        cleaning_options = self.session_data.get("cleaning_options", {})
         x_column = cleaning_options.get("x_column")
         y_column = cleaning_options.get("y_column")
 
         return {
             "message": "Data processed successfully!",
-            "file_info": {"filename": filename, "original_shape": df.shape, "cleaned_shape": df_clean.shape},
-            "columns": {"x_column": x_column, "y_column": y_column, "all_columns": df.columns.tolist()},
+            "file_info": {
+                "filename": filename,
+                "original_shape": df.shape,
+                "cleaned_shape": df_clean.shape,
+            },
+            "columns": {
+                "x_column": x_column,
+                "y_column": y_column,
+                "all_columns": df.columns.tolist(),
+            },
             "cleaning_summary": loader.get_cleaning_summary(),
             "statistics": {
-                "x_data": df_clean[x_column].values.tolist() if x_column in df_clean.columns else [],
-                "y_data": df_clean[y_column].values.tolist() if y_column in df_clean.columns else [],
-                "x_mean": float(df_clean[x_column].mean()) if x_column in df_clean.columns else 0.0,
-                "y_mean": float(df_clean[y_column].mean()) if y_column in df_clean.columns else 0.0,
-                "x_std": float(df_clean[x_column].std()) if x_column in df_clean.columns else 0.0,
-                "y_std": float(df_clean[y_column].std()) if y_column in df_clean.columns else 0.0
+                "x_data": (
+                    df_clean[x_column].values.tolist()
+                    if x_column in df_clean.columns
+                    else []
+                ),
+                "y_data": (
+                    df_clean[y_column].values.tolist()
+                    if y_column in df_clean.columns
+                    else []
+                ),
+                "x_mean": (
+                    float(df_clean[x_column].mean())
+                    if x_column in df_clean.columns
+                    else 0.0
+                ),
+                "y_mean": (
+                    float(df_clean[y_column].mean())
+                    if y_column in df_clean.columns
+                    else 0.0
+                ),
+                "x_std": (
+                    float(df_clean[x_column].std())
+                    if x_column in df_clean.columns
+                    else 0.0
+                ),
+                "y_std": (
+                    float(df_clean[y_column].std())
+                    if y_column in df_clean.columns
+                    else 0.0
+                ),
             },
-            "model_summary": {"data_quality": "clean", "total_features": 2, "data_type": "numerical", "ready_for_training": True},
-            "next_step": "ready_for_training"
+            "model_summary": {
+                "data_quality": "clean",
+                "total_features": 2,
+                "data_type": "numerical",
+                "ready_for_training": True,
+            },
+            "next_step": "ready_for_training",
         }
 
     def setup_training(self, train_split: float) -> dict[str, object]:
@@ -111,8 +158,8 @@ class APIHelper:
             logger.warning("Attempted to start training without cleaned data")
             raise ValueError("No cleaned data available for training")
 
-        df_clean: pd.DataFrame = self.session_data["cleaned_data"]  # type: ignore
-        cleaning_options: dict[str, str] = self.session_data.get("cleaning_options", {})  # type: ignore
+        df_clean: pd.DataFrame = self.session_data["cleaned_data"]
+        cleaning_options: dict[str, str] = self.session_data.get("cleaning_options", {})
         x_column = cleaning_options.get("x_column")
         y_column = cleaning_options.get("y_column")
 
@@ -124,9 +171,18 @@ class APIHelper:
         model.set_training_data(split_result["x_train"], split_result["y_train"])
 
         self._initialize_training_state(model)
-        logger.info("Training setup complete: train_ratio=%.2f, train_size=%d", train_split, len(split_result["x_train"]))
+        logger.info(
+            "Training setup complete: train_ratio=%.2f, train_size=%d",
+            train_split,
+            len(split_result["x_train"]),
+        )
 
-        return {"model": model, "x_data": x_data, "y_data": y_data, "split_result": split_result}
+        return {
+            "model": model,
+            "x_data": x_data,
+            "y_data": y_data,
+            "split_result": split_result,
+        }
 
     async def training_stream(
         self,
@@ -138,7 +194,7 @@ class APIHelper:
         epochs: int,
         tolerance: float,
         early_stopping: bool,
-        training_speed: float
+        training_speed: float,
     ):
         """
         Async generator that yields SSE-style strings for each epoch.
@@ -147,7 +203,12 @@ class APIHelper:
         prefix expected by a simple server-sent-events client.
         """
         try:
-            logger.info("Training stream started: epochs=%d, lr=%.6f, early_stopping=%s", epochs, learning_rate, early_stopping)
+            logger.info(
+                "Training stream started: epochs=%d, lr=%.6f, early_stopping=%s",
+                epochs,
+                learning_rate,
+                early_stopping,
+            )
             x_test = split_result["x_test"]
             y_test = split_result["y_test"]
             x_train_orig = split_result["x_train"]
@@ -159,7 +220,7 @@ class APIHelper:
                 learning_rate=learning_rate,
                 max_epochs=epochs,
                 tolerance=tolerance,
-                early_stopping=early_stopping
+                early_stopping=early_stopping,
             ):
                 if not self._should_continue_training():
                     logger.info("Training stream stopped by request")
@@ -167,13 +228,17 @@ class APIHelper:
 
                 await self._handle_training_pause()
 
-                response_data = self._prepare_epoch_response(epoch_data, model, x_train_orig, y_train_orig)
+                response_data = self._prepare_epoch_response(
+                    epoch_data, model, x_train_orig, y_train_orig
+                )
                 yield f"data: {json.dumps(response_data)}\n\n"
 
                 if not epoch_data.get("is_complete", False):
                     await asyncio.sleep(epoch_delay)
 
-            final_data = await self._prepare_final_results(model, x_data, y_data, x_test, y_test)
+            final_data = await self._prepare_final_results(
+                model, x_data, y_data, x_test, y_test
+            )
             logger.info("Training stream completed")
             yield f"data: {json.dumps(final_data)}\n\n"
 
@@ -187,12 +252,20 @@ class APIHelper:
 
     def _initialize_training_state(self, model: LinearRegressionModel) -> None:
         """Mark training active and store model in session."""
-        self.session_data.update({"training_active": True, "training_paused": False, "training_model": model})
+        self.session_data.update(
+            {"training_active": True, "training_paused": False, "training_model": model}
+        )
 
     @staticmethod
     def _get_training_delay(training_speed: float) -> float:
         """Map user speed to a sensible per-epoch delay (seconds)."""
-        speed_delays: dict[float, float] = {1.0: 0.1, 0.8: 0.3, 0.6: 0.6, 0.4: 1.0, 0.2: 1.5}
+        speed_delays: dict[float, float] = {
+            1.0: 0.1,
+            0.8: 0.3,
+            0.6: 0.6,
+            0.4: 1.0,
+            0.2: 1.5,
+        }
         closest = min(speed_delays.keys(), key=lambda x: abs(x - training_speed))
         return speed_delays[closest]
 
@@ -202,7 +275,9 @@ class APIHelper:
 
     async def _handle_training_pause(self) -> None:
         """Await while the session indicates training should remain paused."""
-        while self.session_data.get("training_paused", False) and self.session_data.get("training_active", False):
+        while self.session_data.get("training_paused", False) and self.session_data.get(
+            "training_active", False
+        ):
             logger.info("Training paused; waiting...")
             await asyncio.sleep(0.5)
 
@@ -211,31 +286,24 @@ class APIHelper:
         epoch_data: dict[str, object],
         model: LinearRegressionModel,
         x_train_orig: np.ndarray,
-        y_train_orig: np.ndarray
+        y_train_orig: np.ndarray,
     ) -> dict[str, object]:
         """Assemble a typed response dict for a training epoch."""
         original_params = model.get_original_scale_parameters()
-
-        if epoch_data["epoch"] % 10 == 0 or epoch_data.get("is_complete", False):  # type: ignore
-            try:
-                train_predictions = model.predict(x_train_orig)
-                original_cost = float(np.mean((train_predictions - y_train_orig) ** 2))
-            except Exception:
-                original_cost = float(epoch_data.get("cost", 0.0))  # type: ignore
-        else:
-            original_cost = float(epoch_data.get("cost", 0.0))  # type: ignore
+        # Always send normalized cost provided by the model
+        normalized_cost = float(epoch_data.get("cost", 0.0))
 
         return {
-            "epoch": int(epoch_data["epoch"]),  # type: ignore
-            "max_epochs": int(epoch_data["max_epochs"]),  # type: ignore
+            "epoch": int(epoch_data["epoch"]),
+            "max_epochs": int(epoch_data["max_epochs"]),
             "theta0": float(original_params["theta0"]),
             "theta1": float(original_params["theta1"]),
-            "cost": float(original_cost),
+            "cost": float(normalized_cost),
             "converged": bool(epoch_data.get("converged", False)),
             "is_complete": bool(epoch_data.get("is_complete", False)),
             "rmse": float(epoch_data.get("rmse", 0.0)),
             "mae": float(epoch_data.get("mae", 0.0)),
-            "r2": float(epoch_data.get("r2", 0.0))
+            "r2": float(epoch_data.get("r2", 0.0)),
         }
 
     async def _prepare_final_results(
@@ -244,7 +312,7 @@ class APIHelper:
         x_data: np.ndarray,
         y_data: np.ndarray,
         x_test: np.ndarray,
-        y_test: np.ndarray
+        y_test: np.ndarray,
     ) -> dict[str, object]:
         """Compute final metrics, run sklearn comparison, and return payload."""
         try:
@@ -280,10 +348,15 @@ class APIHelper:
             "final_mae": final_metrics.get("mae", 0.0),
             "final_r2": final_metrics.get("r2", 0.0),
             "metrics_summary": metrics_summary,
-            "sklearn_comparison": {"sklearn_results": sklearn_results, "status": "success" if sklearn_results else "failed"}
+            "sklearn_comparison": {
+                "sklearn_results": sklearn_results,
+                "status": "success" if sklearn_results else "failed",
+            },
         }
 
-    async def _calculate_sklearn_comparison(self, x_data: np.ndarray, y_data: np.ndarray) -> dict[str, object] | None:
+    async def _calculate_sklearn_comparison(
+        self, x_data: np.ndarray, y_data: np.ndarray
+    ) -> dict[str, object] | None:
         """Safely run sklearn comparison and return results or None."""
         try:
             comp = SklearnComparison()

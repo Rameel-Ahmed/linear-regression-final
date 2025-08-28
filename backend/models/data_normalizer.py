@@ -47,7 +47,9 @@ class DataNormalizer:
         if self.__y_std == 0.0:
             self.__y_std = 1.0
 
-    def normalize(self, x_data: np.ndarray, y_data: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def normalize(
+        self, x_data: np.ndarray, y_data: np.ndarray
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Return (x_norm, y_norm) arrays using stored stats."""
         try:
             x_arr: np.ndarray = np.asarray(x_data, dtype=float)
@@ -66,7 +68,9 @@ class DataNormalizer:
         except Exception as exc:
             raise RuntimeError(f"Denormalization failed: {exc}") from exc
 
-    def get_original_scale_parameters(self, theta0_norm: float, theta1_norm: float) -> dict[str, float]:
+    def get_original_scale_parameters(
+        self, theta0_norm: float, theta1_norm: float
+    ) -> dict[str, float]:
         """
         Convert normalized linear parameters to original data scale.
 

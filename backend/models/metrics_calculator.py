@@ -14,10 +14,15 @@ class MetricsCalculator:
     def __init__(self) -> None:
         """Initialize internal history structure."""
         self.__metrics_history: dict[str, list[float] | list[int]] = {
-            "rmse": [], "mae": [], "r2": [], "epochs": []
+            "rmse": [],
+            "mae": [],
+            "r2": [],
+            "epochs": [],
         }
 
-    def calculate_metrics(self, y_true: np.ndarray, y_pred: np.ndarray, epoch: int) -> dict[str, float]:
+    def calculate_metrics(
+        self, y_true: np.ndarray, y_pred: np.ndarray, epoch: int
+    ) -> dict[str, float]:
         """Compute RMSE, MAE, R² and append values to internal history."""
         try:
             rmse: float = self._calculate_rmse(y_true, y_pred)
@@ -37,7 +42,7 @@ class MetricsCalculator:
             "rmse": float(self.__metrics_history["rmse"][-1]),
             "mae": float(self.__metrics_history["mae"][-1]),
             "r2": float(self.__metrics_history["r2"][-1]),
-            "epoch": int(self.__metrics_history["epochs"][-1])
+            "epoch": int(self.__metrics_history["epochs"][-1]),
         }
 
     def get_metrics_summary(self) -> dict[str, dict[str, float]]:
@@ -52,14 +57,13 @@ class MetricsCalculator:
                 "min": float(np.min(vals)),
                 "max": float(np.max(vals)),
                 "current": float(vals[-1]),
-                "improvement": float(vals[0] - vals[-1]) if len(vals) > 1 else 0.0
+                "improvement": float(vals[0] - vals[-1]) if len(vals) > 1 else 0.0,
             }
         return summary
 
     def get_metrics_history(self) -> dict[str, list[float] | list[int]]:
         """Return a shallow copy of the stored metrics history."""
         return dict(self.__metrics_history)
-
 
     @staticmethod
     def _calculate_rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:

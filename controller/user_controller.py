@@ -66,14 +66,16 @@ class UserController:
             A summary constructed by :meth:`backend.api_helpers.APIHelper.analyze_data_quality`.
         """
         try:
-            self._logger.info("Analyze data quality requested: x=%s, y=%s", x_column, y_column)
+            self._logger.info(
+                "Analyze data quality requested: x=%s, y=%s", x_column, y_column
+            )
             df = await self.api_helpers.read_csv_file(file)
             return self.api_helpers.analyze_data_quality(df, x_column, y_column)
         except Exception as e:
             self._logger.exception("Analysis failed")
             raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
-# --- Data Processing -----------------------------------------------------
+    # --- Data Processing -----------------------------------------------------
 
     async def process_data(
         self,
@@ -83,7 +85,7 @@ class UserController:
         remove_duplicates: bool = Form(True),
         remove_outliers: bool = Form(False),
         handle_missing: str = Form("remove"),
-        remove_strings: bool = Form(True)
+        remove_strings: bool = Form(True),
     ) -> dict[str, Any]:
         """Clean the uploaded CSV and return a structured response.
 
@@ -94,25 +96,34 @@ class UserController:
             self._logger.info("Process data requested: x=%s, y=%s", x_column, y_column)
             df = await self.api_helpers.read_csv_file(file)
             loader = CSVLoader(x_column, y_column)
-            df_clean = loader.clean_data(df, remove_duplicates, remove_outliers,
-                                         handle_missing, remove_strings)
+            df_clean = loader.clean_data(
+                df, remove_duplicates, remove_outliers, handle_missing, remove_strings
+            )
 
             self.api_helpers.store_processed_data(
-                file.filename, df, df_clean, loader, {
-                    'x_column': x_column, 'y_column': y_column,
-                    'remove_duplicates': remove_duplicates,
-                    'remove_outliers': remove_outliers,
-                    'handle_missing': handle_missing,
-                    'remove_strings': remove_strings
-                })
+                file.filename,
+                df,
+                df_clean,
+                loader,
+                {
+                    "x_column": x_column,
+                    "y_column": y_column,
+                    "remove_duplicates": remove_duplicates,
+                    "remove_outliers": remove_outliers,
+                    "handle_missing": handle_missing,
+                    "remove_strings": remove_strings,
+                },
+            )
 
-            return self.api_helpers.prepare_process_response(file.filename, df, df_clean, loader)
+            return self.api_helpers.prepare_process_response(
+                file.filename, df, df_clean, loader
+            )
 
         except Exception as e:
             self._logger.exception("Processing failed")
             raise HTTPException(status_code=500, detail=f"Processing failed: {str(e)}")
 
-# --- Training lifecycle --------------------------------------------------
+    # --- Training lifecycle --------------------------------------------------
 
     async def start_training(
         self,
@@ -121,7 +132,7 @@ class UserController:
         tolerance: float = Form(...),
         early_stopping: bool = Form(True),
         train_split: float = Form(0.8),
-        training_speed: float = Form(1.0)
+        training_speed: float = Form(1.0),
     ) -> StreamingResponse:
         """Kick off model training and stream epoch updates.
 
@@ -131,19 +142,29 @@ class UserController:
             Server-sent events stream (``text/plain``) suitable for EventSource.
         """
         try:
-            self._logger.info("Start training requested: lr=%s, epochs=%s, tol=%s, early_stopping=%s, split=%.2f, speed=%s",
-                              learning_rate, epochs, tolerance, early_stopping, train_split, training_speed)
+            self._logger.info(
+                "Start training requested: lr=%s, epochs=%s, tol=%s, early_stopping=%s, split=%.2f, speed=%s",
+                learning_rate,
+                epochs,
+                tolerance,
+                early_stopping,
+                train_split,
+                training_speed,
+            )
             training_setup = self.api_helpers.setup_training(train_split)
             return StreamingResponse(
                 self.api_helpers.training_stream(
-                    training_setup['model'],
-                    training_setup['x_data'],
-                    training_setup['y_data'],
-                    training_setup['split_result'],
-                    learning_rate, epochs, tolerance,
-                    early_stopping, training_speed
+                    training_setup["model"],
+                    training_setup["x_data"],
+                    training_setup["y_data"],
+                    training_setup["split_result"],
+                    learning_rate,
+                    epochs,
+                    tolerance,
+                    early_stopping,
+                    training_speed,
                 ),
-                media_type="text/plain"
+                media_type="text/plain",
             )
         except Exception as e:
             self._logger.exception("Training failed to start")
@@ -152,45 +173,53 @@ class UserController:
     async def pause_training(self) -> dict[str, str]:
         """Pause a running training stream (idempotent)."""
         try:
-            if (self.session_data.get('training_active', False) and
-                not self.session_data.get('training_paused', False)):
-                self.session_data['training_paused'] = True
+            if self.session_data.get(
+                "training_active", False
+            ) and not self.session_data.get("training_paused", False):
+                self.session_data["training_paused"] = True
                 self._logger.info("Training paused")
                 return {"message": "Training paused"}
-            elif self.session_data.get('training_paused', False):
+            elif self.session_data.get("training_paused", False):
                 return {"message": "Training already paused"}
             else:
                 return {"message": "No active training to pause"}
         except Exception as e:
             self._logger.exception("Failed to pause training")
-            raise HTTPException(status_code=500, detail=f"Failed to pause training: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to pause training: {str(e)}"
+            )
 
     async def resume_training(self) -> dict[str, str]:
         """Resume a previously paused training session."""
         try:
-            if (self.session_data.get('training_active', False) and
-                self.session_data.get('training_paused', False)):
-                self.session_data['training_paused'] = False
+            if self.session_data.get(
+                "training_active", False
+            ) and self.session_data.get("training_paused", False):
+                self.session_data["training_paused"] = False
                 self._logger.info("Training resumed")
                 return {"message": "Training resumed"}
-            elif not self.session_data.get('training_paused', False):
+            elif not self.session_data.get("training_paused", False):
                 return {"message": "Training not paused"}
             else:
                 return {"message": "No active training to resume"}
         except Exception as e:
             self._logger.exception("Failed to resume training")
-            raise HTTPException(status_code=500, detail=f"Failed to resume training: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to resume training: {str(e)}"
+            )
 
     async def stop_training(self) -> dict[str, str]:
         """Request graceful shutdown of an active training session."""
         try:
-            if self.session_data.get('training_active', False):
-                self.session_data['training_active'] = False
-                self.session_data['training_paused'] = False
+            if self.session_data.get("training_active", False):
+                self.session_data["training_active"] = False
+                self.session_data["training_paused"] = False
                 self._logger.info("Training stop requested")
                 return {"message": "Training stop requested"}
             else:
                 return {"message": "No active training to stop"}
         except Exception as e:
             self._logger.exception("Failed to stop training")
-            raise HTTPException(status_code=500, detail=f"Failed to stop training: {str(e)}")
+            raise HTTPException(
+                status_code=500, detail=f"Failed to stop training: {str(e)}"
+            )

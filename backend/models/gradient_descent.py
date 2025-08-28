@@ -39,7 +39,9 @@ class GradientDescent:
         try:
             theta_arr: np.ndarray = np.asarray(theta, dtype=float)
             preds: np.ndarray = self.__hypothesis(theta_arr)
-            cost: float = (1.0 / (2.0 * self.__m)) * np.sum((preds - self.__y_data) ** 2)
+            cost: float = (1.0 / (2.0 * self.__m)) * np.sum(
+                (preds - self.__y_data) ** 2
+            )
             return float(cost)
         except Exception as exc:
             raise RuntimeError(f"Cost computation failed: {exc}") from exc

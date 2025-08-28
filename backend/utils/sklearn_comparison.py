@@ -26,7 +26,9 @@ class SklearnComparison:
         """Create a fresh sklearn LinearRegression instance."""
         self.__sklearn_model: LinearRegression = LinearRegression()
 
-    def calculate_sklearn_results(self, x_data: np.ndarray, y_data: np.ndarray) -> dict[str, object]:
+    def calculate_sklearn_results(
+        self, x_data: np.ndarray, y_data: np.ndarray
+    ) -> dict[str, object]:
         """Fit sklearn model and compute predictions and metrics."""
         try:
             X: np.ndarray = np.asarray(x_data, dtype=float).reshape(-1, 1)
@@ -37,18 +39,20 @@ class SklearnComparison:
             return {
                 "sklearn_coefficients": {
                     "intercept": float(self.__sklearn_model.intercept_),
-                    "slope": float(self.__sklearn_model.coef_[0])
+                    "slope": float(self.__sklearn_model.coef_[0]),
                 },
                 "predictions": y_pred.tolist(),
                 "metrics": metrics,
                 "equation": f"y = {self.__sklearn_model.intercept_:.4f} + "
-                            f"{self.__sklearn_model.coef_[0]:.4f} * x"
+                f"{self.__sklearn_model.coef_[0]:.4f} * x",
             }
         except Exception as exc:
             return {"error": True, "message": f"Sklearn comparison failed: {exc}"}
 
     @staticmethod
-    def _calculate_comparison_metrics(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
+    def _calculate_comparison_metrics(
+        y_true: np.ndarray, y_pred: np.ndarray
+    ) -> dict[str, float]:
         """Return RMSE, MAE, and R² for sklearn predictions (static)."""
         try:
             return {

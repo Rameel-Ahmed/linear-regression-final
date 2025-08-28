@@ -87,13 +87,17 @@ class CSVLoader:
                 if x_strings == len(df):
                     analysis["summary"].append("X column is all string")
                 else:
-                    analysis["summary"].append(f"{x_strings} rows have string in X column")
+                    analysis["summary"].append(
+                        f"{x_strings} rows have string in X column"
+                    )
 
             if y_strings:
                 if y_strings == len(df):
                     analysis["summary"].append("Y column is all string")
                 else:
-                    analysis["summary"].append(f"{y_strings} rows have string in Y column")
+                    analysis["summary"].append(
+                        f"{y_strings} rows have string in Y column"
+                    )
 
             if not analysis["summary"]:
                 analysis["summary"].append("Data looks clean!")
@@ -157,12 +161,10 @@ class CSVLoader:
         """Alias for :pyattr:`cleaning_summary` property (kept for legacy)."""
         return self.cleaning_summary
 
-
     @property
     def cleaning_summary(self) -> dict[str, Any]:
         """Read-only view of the most-recent cleaning summary."""
         return dict(self.__cleaning_summary)
-
 
     def __remove_duplicates(self, df: pd.DataFrame) -> pd.DataFrame:
         """Remove duplicate rows and note how many were dropped."""
@@ -226,7 +228,9 @@ class CSVLoader:
                 if col not in numeric_cols:
                     numeric_cols.append(col)
 
-        df_clean: pd.DataFrame = df[numeric_cols].dropna(subset=[self.__x_colname, self.__y_colname])
+        df_clean: pd.DataFrame = df[numeric_cols].dropna(
+            subset=[self.__x_colname, self.__y_colname]
+        )
 
         removed_count: int = len(df.columns) - len(df_clean.columns)
         if removed_count > 0:
@@ -249,7 +253,10 @@ class CSVLoader:
             raise ValueError("Data contains infinite values")
 
     def __update_cleaning_summary(
-        self, original: pd.DataFrame, cleaned: pd.DataFrame, cleaning_options: dict[str, Any]
+        self,
+        original: pd.DataFrame,
+        cleaned: pd.DataFrame,
+        cleaning_options: dict[str, Any],
     ) -> None:
         """Store final cleaning metadata for later retrieval."""
         self.__cleaning_summary.update(

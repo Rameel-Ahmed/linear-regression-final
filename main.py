@@ -13,8 +13,7 @@ import logging
 
 # Basic console logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s %(name)s: %(message)s"
+    level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -42,9 +41,12 @@ async def root() -> HTMLResponse:
             return HTMLResponse(content=f.read())
     except FileNotFoundError:
         raise HTTPException(status_code=404, detail="Main page not found")
+
+
 # Register all routes from the controller
 app.include_router(user_router, prefix="/api/v1")
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="127.0.0.1", port=8000)
