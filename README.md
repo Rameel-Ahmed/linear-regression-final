@@ -313,3 +313,34 @@ This project is open source and available under the MIT License.
 ---
 
 **Built with using modern Python and web technologies**
+├── .gitignore
+├── README.md
+├── backend
+    ├── api_helpers.py
+    ├── models
+    │   ├── data_normalizer.py
+    │   ├── gradient_descent.py
+    │   ├── linear_regression.py
+    │   └── metrics_calculator.py
+    └── utils
+    │   ├── csv_loader.py
+    │   └── sklearn_comparison.py
+├── controller
+    └── user_controller.py
+├── main.py
+├── requirements.txt
+├── routes
+    └── user_routes.py
+└── static
+    ├── css
+        └── styles.css
+    ├── index.html
+    ├── js
+        ├── helping_functions.js
+        ├── results.js
+        ├── script.js
+        ├── state.js
+        ├── training.js
+        └── visualization-functions.js
+    ├── results.html
+    └── training.html
